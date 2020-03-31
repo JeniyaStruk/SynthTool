@@ -1,0 +1,3 @@
+﻿  main.cpp
+c:\users\estruk\source\repos\synthesistool\synthesistool\main.cpp(458): warning C4101: 'd': unreferenced local variable
+  SynthesisTool.vcxproj -> C:\Users\estruk\source\repos\SynthesisTool\Debug\SynthesisTool.exe
