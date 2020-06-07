@@ -1,4 +1,5 @@
 #pragma once
+#ifndef ORIGIN_G
 #include "OriginNode.h"
 
 class OriginGraph
@@ -6,7 +7,7 @@ class OriginGraph
 public:
 	vector<OriginNode*> nodes;
 	OriginNode* q0;
-	OriginGraph(vector<OriginNode*> nodes, OriginNode* q0)
+	OriginGraph(vector<OriginNode*> &nodes, OriginNode* q0)
 	{
 		this->nodes = nodes;
 		this->q0 = q0;
@@ -41,3 +42,5 @@ public:
 		}
 	}
 };
+
+#endif

@@ -27,6 +27,15 @@
     <ClInclude Include="OriginGraph.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Algorithms.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SimpleGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HarderGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">

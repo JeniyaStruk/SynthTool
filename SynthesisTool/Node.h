@@ -1,6 +1,7 @@
 #pragma once
-
+#ifndef NODE
 #include <vector>
+#include <iostream>
 class Node
 {
 public:
@@ -10,6 +11,7 @@ public:
 	bool p;
 	bool Good;
 	bool in_cpre_1;
+	int distance_from_notP;
 
 	Node() {}
 	Node(int index, bool prop)
@@ -51,4 +53,9 @@ public:
 		else
 			return envNeighbours;
 	}
+	void virtual printCurrent()
+	{
+		std::cout << "Current Node is V" << index << endl;
+	}
 };
+#endif

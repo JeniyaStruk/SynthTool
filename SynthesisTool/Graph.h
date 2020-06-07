@@ -1,4 +1,5 @@
 #pragma once
+#ifndef GRAPH
 
 #include "Node.h"
 #include <vector>
@@ -48,4 +49,11 @@ public:
 			cout << endl << endl;
 		}
 	}
+
+	~Graph()
+	{
+		free(q0);
+		nodes.clear();
+	}
 };
+#endif

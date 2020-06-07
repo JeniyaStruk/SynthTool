@@ -1,5 +1,5 @@
 #pragma once
-
+#ifndef ORIGIN_N
 #include "Node.h"
 #include <vector>
 #include <iostream>
@@ -12,7 +12,6 @@ class OriginNode :public Node
 public:
 	vector<OriginNode*> neigbours;
 	archLeadinToNode originArch;
-	int indexOfNode;
 	int dist;
 
 	OriginNode(Node* node, bool cameFromSys)
@@ -22,7 +21,6 @@ public:
 		else
 			originArch = Env;
 		this->index = node->index;
-		this->indexOfNode = index;
 		this->p = node->p;
 		this->Good = node->Good;
 		dist = -1;
@@ -50,3 +48,4 @@ public:
 		return false;
 	}
 };
+#endif

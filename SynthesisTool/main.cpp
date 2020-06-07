@@ -1,177 +1,18 @@
 using namespace std;
 #include <stdio.h>
+#include <stdlib.h>
 #include <vector>
 #include "Node.h"
 #include "Graph.h"
 #include "OriginNode.h"
 #include "OriginGraph.h"
-
-
-/*
-	makes a graph from the original graph , but the new graph has devided nodes.
-	nodes that its the enviroments turn when we are at them , and nodes that its the System tun when we are at them.
-*/
-OriginGraph* makeASeperatedGraph(Graph& g)
-{
-	vector<OriginNode*> newNodes;
-
-	for (size_t i = 0; i < g.nodes.size(); i++)
-	{
-		OriginNode* v1 = new OriginNode(g.nodes[i], true);
-		OriginNode* v2 = new OriginNode(g.nodes[i], false);
-
-		newNodes.push_back(v1);
-		newNodes.push_back(v2);
-	}
-	OriginNode* v1;
-	for (size_t i = 0; i < g.nodes.size(); i++)
-	{
-		vector<Node*> EnvNeig = g.nodes[i]->envNeighbours;
-		for (size_t k = 0; k < EnvNeig.size(); k++)
-		{
-			int t = (EnvNeig[k]->index * 2 + 1);
-			v1 = newNodes[t];
-			newNodes[(2 * i)]->addOriginNeighbour(v1);
-		}
-
-		vector<Node*> SysNeig = g.nodes[i]->sysNeighbours;
-		for (size_t j = 0; j < SysNeig.size(); j++)
-		{
-			int t = (SysNeig[j]->index * 2);
-			v1 = newNodes[t];
-			newNodes[(2 * i) + 1]->addOriginNeighbour(v1);
-		}
-
-	}
-
-	OriginGraph* newG = new OriginGraph(newNodes, newNodes[0]);
-	return newG;
-}
-
-
-/*
-	addtion of System nodes that have at least one member entering to the group.
-	or Env nodes that have only group members.
-*/
-void cpre_1(OriginGraph &g, vector<OriginNode*> group)
-{
-	for (size_t i = 0; i < g.nodes.size(); i++)
-	{
-		g.nodes[i]->Good = false;
-		g.nodes[i]->in_cpre_1 = false;
-	}
-	for (size_t i = 0; i < group.size(); i++)
-	{
-		group[i]->Good = true;
-	}
-	for (size_t i = 0; i < g.nodes.size(); i++)
-	{
-		if (g.nodes[i]->originArch == Sys)
-		{
-			vector<OriginNode*> neig = g.nodes[i]->getNeighbours();
-			if (neig.size() != 0)
-			{
-				bool flag = true;
-				for (size_t j = 0; j < neig.size(); j++)
-				{
-					if (neig[j]->Good == false)
-						flag = false;
-				}
-				if (flag)
-					g.nodes[i]->in_cpre_1 = true;
-			}
-		}
-		else
-		{
-			vector<OriginNode*> neig = g.nodes[i]->getNeighbours();
-			for (size_t k = 0; k < neig.size(); k++)
-				if (neig[k]->Good == true)
-				{
-					g.nodes[i]->in_cpre_1 = true;
-					break;
-				}
-		}
-	}
-}
-
-bool alwaysP(OriginGraph& g)
-{
-	int oldSize = 0;
-	vector<OriginNode*> good;
-	size_t vSize = g.nodes.size();
-
-	//determine who is the initial group
-	for (size_t i = 0; i < vSize; i++)
-	{
-		OriginNode* n = g.nodes[i];
-		if (n->p == true)
-		{
-			good.push_back(n);
-		}
-
-	}
-	//starting the loop uptil fixed point
-	int newSize = good.size();
-	while (oldSize != newSize && g.q0->Good == true)
-	{
-		oldSize = newSize;
-		cpre_1(g, good);
-		size_t sizeG = good.size();
-		for (size_t k = 0; k < sizeG; k++)
-			if (good[k]->in_cpre_1 == false)
-			{
-				good.erase(good.begin() + k);
-				sizeG--;
-				k--;
-			}
-		newSize = good.size();
-	}
-	return g.q0->Good;
-}
-
-bool alwaysEventuallyP(OriginGraph &g)
-{
-	int oldSize = 0;
-	vector<OriginNode*> group = g.nodes;
-	vector<OriginNode*> l;
-	size_t oldSizeL = 0, newSizeL;
-	size_t oldSizeG = 0, newSizeG;
-	newSizeG = group.size();
-	while (oldSizeG != newSizeG)
-	{
-		oldSizeG = newSizeG;
-		cpre_1(g, group);
-
-		//removal of non p nodes.
-		size_t sizeG = group.size();
-		for (size_t k = 0; k < sizeG; k++)
-			if (group[k]->p == false||(group[k]->Good&&!group[k]->in_cpre_1))
-			{
-				group.erase(group.begin() + k);
-				sizeG--;
-				k--;
-			}
-		l = group;
-		//now after initializion l as p & core_1 (g) we do a fixed point of l or cpre_1(l)
-		oldSizeL = l.size();
-		newSizeL = 0;
-		while (oldSizeL != newSizeL)
-		{
-			oldSizeL = newSizeL;
-			cpre_1(g, l);
-			for (size_t k = 0; k < g.nodes.size(); k++)
-				if (g.nodes[k]->in_cpre_1 && !g.nodes[k]->Good)
-					l.push_back(g.nodes[k]);
-			newSizeL = l.size();
-		}
-		group = l;
-		newSizeG = group.size();
-	}
-	if (g.q0->Good)
-		return true;
-	else
-		return false;
-}
+#include "Algorithms.h"
+#include "SimpleGame.h"
+#include "HarderGame.h"
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <ctype.h>
 
 
 void tryContradictTrue(OriginGraph &g, bool GP)
@@ -254,7 +95,6 @@ void tryContradictTrue(OriginGraph &g, bool GP)
 	}
 }
 
-
 void tryContradictFalse(OriginGraph &g, bool GP)
 {
 	int num = 0;
@@ -270,12 +110,13 @@ void tryContradictFalse(OriginGraph &g, bool GP)
 	{
 		if (EnvTurn)
 		{
-			cout << "Current node is V" << currentNode->index << endl;
+			currentNode->printCurrent();
 			cout << "It has " << currentNode->neigbours.size() << " neighbours System can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
+				currentNode->printCurrent();
 				cout << "V" << currentNode->neigbours[i]->index << " ,";
-				if (!currentNode->neigbours[i]->Good)
+				if (!currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
 			}
 			cout << endl << "Env chooses V" << currentNode->neigbours[num]->index << endl;
@@ -326,10 +167,8 @@ void tryContradictFalse(OriginGraph &g, bool GP)
 		cout << "Thanks for trying !" << endl;
 }
 
-
-int main()
+void doGPandGFP()
 {
-	int size = 0, num = 0, i;
 	/*while (size <= 0)
 	{
 		cout << "How many nodes do you want in your graph? (must be above 0)" << endl;
@@ -372,23 +211,117 @@ int main()
 		}
 	}
 	*/
-
-	vector<Node*> nodes;
-	for (i = 0; i < 6; i++)
+	/*vector<Node*> nodesG;
+	for (int i = 0; i < 6; i++)
 	{
 		Node* v = new Node(i, i < 4);
-		nodes.push_back(v);
+		nodesG.push_back(v);
 	}
-	nodes[0]->addNeighbour(nodes[1], false);
-	nodes[0]->addNeighbour(nodes[3], true);
-	nodes[1]->addNeighbour(nodes[2], true);
-	nodes[1]->addNeighbour(nodes[3], true);
-	nodes[1]->addNeighbour(nodes[3], false);
-	nodes[2]->addNeighbour(nodes[2], false);
-	nodes[2]->addNeighbour(nodes[2], true);
-	nodes[3]->addNeighbour(nodes[4], false);
-	nodes[4]->addNeighbour(nodes[5], false);
+	nodesG[0]->addNeighbour(nodesG[1], false);
+	nodesG[0]->addNeighbour(nodesG[3], true);
+	nodesG[1]->addNeighbour(nodesG[2], true);
+	nodesG[1]->addNeighbour(nodesG[3], true);
+	nodesG[1]->addNeighbour(nodesG[3], false);
+	nodesG[2]->addNeighbour(nodesG[2], false);
+	nodesG[2]->addNeighbour(nodesG[2], true);
+	nodesG[3]->addNeighbour(nodesG[4], false);
+	nodesG[4]->addNeighbour(nodesG[5], false);
+	*/
+	int size = 0, num = 0, secNum = 0, i;
+	ifstream file("InputGraph.txt", ios::in | ios::binary | ios::ate);
+	if (!file.is_open())
+	{
+		cout << "couldn't open the file , maybe its not in the directory of the exe? the name shoud be \"InputGraph.txt\"" << endl;
+		return ;
+	}
+	size = file.tellg();
+	char* InGraph = new char[size];
+	file.seekg(0, ios::beg);
+	file.read(InGraph, size);
+	file.close();
 
+	bool flagNumNodes = 0, flagPnodes = 0, flagSys = 0, flagEnv = 0;
+	vector<Node*> nodes;
+	Node* v;
+	for (i = 0; i < size; i++)
+	{
+		if (flagNumNodes == 0)
+		{
+			if (isdigit(InGraph[i]))
+			{
+				num = atoi(&InGraph[i]);
+				flagNumNodes = true;
+
+				for (int k = 0; k < num; k++)
+				{
+					v = new Node(k, false);
+					nodes.push_back(v);
+				}
+			}
+		}
+		else
+		{
+			if (flagPnodes == false)
+			{
+				if (isdigit(InGraph[i]))
+				{
+					while (InGraph[i] != 'S')
+					{
+						if (isdigit(InGraph[i]))
+						{
+							num = atoi(&InGraph[i]);
+							nodes[num - 1]->p = true;
+							nodes[num - 1]->Good = true;
+						}
+						i++;
+					}
+					flagPnodes = true;
+				}
+			}
+			else
+			{
+				if (flagSys == false)
+				{
+					//here we need to take in pairs as arches.
+
+					while (InGraph[i] != 'E')
+					{
+						if (isdigit(InGraph[i]))
+						{
+							num = atoi(&InGraph[i]);
+							secNum = atoi(&InGraph[i + 2]);
+							nodes[num - 1]->addNeighbour(nodes[secNum - 1], true);
+							i = i + 2;
+						}
+						i++;
+					}
+					flagSys = true;
+
+				}
+				else
+				{
+					if (flagEnv == false)
+					{
+						while (InGraph[i] != 'E')
+						{
+							if (isdigit(InGraph[i]))
+							{
+								num = atoi(&InGraph[i]);
+								secNum = atoi(&InGraph[i + 2]);
+								nodes[num - 1]->addNeighbour(nodes[secNum - 1], false);
+								i = i + 2;
+							}
+							i++;
+						}
+						flagEnv = true;
+					}
+					else
+						break;
+				}
+
+			}
+		}
+	}
 
 	Graph g(nodes, nodes[0]);
 	OriginGraph* newG = makeASeperatedGraph(g);
@@ -454,6 +387,41 @@ int main()
 			else
 				cout << "You pressed the wrong option, Good Bye" << endl;
 	}
+	return;
+}
 
+
+
+int main()
+{
+	int num=0, size;
+	while (num != -1)
+	{
+		cout << "What do you want to play?" << endl << "1. 2 White knights and a Black knight. ( G(p) )" << endl << "2. 2 White knights and a black knight responding! ( G(F(p)) )" << endl << "3. Read an input Graph and do G(p) and G (F (p)) on it " << endl << "Press -1 to exit the games " << endl;
+		cin >> num;
+		switch (num)
+		{
+		case 1:
+			cout << "what size of board do you want? " << endl;
+			cin >> size;
+			PlaySimpleGame(size);
+			break;
+		case 2:
+			cout << "what size of board do you want? " << endl;
+			cin >> size;
+			PlayHarderGame(size);
+			break;
+		case 3:
+			doGPandGFP();
+			break;
+		case -1:
+			cout << "OK FINE !! now we are done." << endl;
+			break;
+		default:
+			cout << " you little rebel , Now this game is ended." << endl;
+			break;
+		}
+	}
 	int d;
+	cin >> d;
 }

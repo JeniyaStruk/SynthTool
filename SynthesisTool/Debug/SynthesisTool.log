@@ -1,3 +1,3 @@
 ﻿  main.cpp
-c:\users\estruk\source\repos\synthesistool\synthesistool\main.cpp(458): warning C4101: 'd': unreferenced local variable
-  SynthesisTool.vcxproj -> C:\Users\estruk\source\repos\SynthesisTool\Debug\SynthesisTool.exe
+F:\SynthesisTool\SynthesisTool\main.cpp(237,19): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
+  SynthesisTool.vcxproj -> F:\SynthesisTool\Debug\SynthesisTool.exe
