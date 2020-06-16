@@ -36,7 +36,7 @@ void tryContradictTrue(OriginGraph &g, bool GP)
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << " ,";
-				if (currentNode->neigbours[i]->Good)
+				if (currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
 			}
 			cout << endl << "Sys chooses V" << currentNode->neigbours[num]->index << endl;

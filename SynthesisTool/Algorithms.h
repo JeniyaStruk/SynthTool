@@ -146,6 +146,7 @@ bool alwaysEventuallyP(OriginGraph& g)
 	while (oldSizeG != newSizeG)
 	{
 		oldSizeG = newSizeG;
+		
 		cpre_1(g, group);
 
 		//removal of non p nodes.
@@ -161,14 +162,19 @@ bool alwaysEventuallyP(OriginGraph& g)
 		//now after initializion l as p & core_1 (g) we do a fixed point of l or cpre_1(l)
 		oldSizeL = 0;
 		newSizeL = l.size();
+		int dist_f_np = 0;
 		while (oldSizeL != newSizeL)
 		{
 			oldSizeL = newSizeL;
+			dist_f_np++;
 			cpre_1(g, l);
 			for (size_t k = 0; k < g.nodes.size(); k++)
 			{
 				if ((g.nodes[k]->in_cpre_1) && (!(g.nodes[k]->Good)))
+				{
+					g.nodes[k]->distance_from_notP = dist_f_np;
 					l.push_back(g.nodes[k]);
+				}
 			}
 			newSizeL = l.size();
 		}

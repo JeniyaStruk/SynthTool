@@ -11,19 +11,25 @@
 
 
 
-void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP)
+void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool randomize_run)
 {
-	int num = 0;
+	
+	int num = 0,num_of_moves=1;
 	bool flag, EnvTurn = true;
 	OriginNode* currentNode;
 	currentNode = g.q0;
 	boardState* current;
 	bool condition1;
+	if (randomize_run)
+	{
+		cout << "how many randomized moves do you want to see?" << endl;
+		cin >> num_of_moves;
+	}
 	if (GP)
 		condition1 = num != -1 && currentNode->p == true;
 	else
 		condition1 = num != -1 && currentNode->Good == true;
-	while (condition1)
+	while (condition1&& num_of_moves>0)
 	{
 		if (!EnvTurn)
 		{
@@ -38,9 +44,11 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP)
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
 				current->printCurrent();
 
-				if (currentNode->neigbours[i]->Good)
+				if (currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
 			}
+			if (randomize_run)
+				num_of_moves--;
 			cout << endl << "Sys chooses V" << currentNode->neigbours[num]->index << endl;
 			current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
 			current->printCurrent();
@@ -62,7 +70,13 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP)
 				current->printCurrent();
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
-			cin >> num;
+			if (randomize_run)
+			{
+				num = rand() % currentNode->neigbours.size();
+				num = currentNode->neigbours[num]->index;
+			}
+			else
+				cin >> num;
 			size_t size = currentNode->neigbours.size();
 			for (size_t i = 0; i < size; i++)
 			{
@@ -76,6 +90,8 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP)
 					current->printCurrent();
 					i = size;
 					EnvTurn = false;
+					if (randomize_run)
+						num_of_moves--;
 				}
 			}
 			if (flag == false)
@@ -89,6 +105,11 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP)
 		else
 			condition1 = num != -1 && currentNode->Good == true;
 
+	}
+	if (randomize_run && num_of_moves <= 0)
+	{
+		cout << "Random Sequence has ended ! " << endl;
+		return;
 	}
 	if (GP)
 	{
@@ -463,30 +484,21 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 2),(size) * (size - 1) };
-			bool flag = 1;
-			int num;
-			while (flag == 1)
-			{
-				num = rand() % 4;
-				if (winning_state->black_player == places[num] || winning_state->white_player_1 == places[num] || winning_state->white_player_2 == places[num])
-				{
-					places[num] = places[(num + 1) % 4];
-				}
-				else
-					flag = 0;
-			}
-			int new_place_4_b = places[num];
-
+			int places[4] = { 0,size - 1,(size) * (size - 1) - 1,(size) * (size)-1 };
 			boardState* next_state;
 			for (size_t j = 0; j < all_states->size(); j++)
 			{
-				next_state = (boardState*)all_states->at(j);
-				if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b)
+				for (int k = 0; k < 4; k++)
 				{
-					winning_state->addNeighbour(next_state, false);
-					//next_state->printCurrent();
-					break;
+					int new_place_4_b = places[k];
+					next_state = (boardState*)all_states->at(j);
+					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
+						&& next_state->white_player_1!= new_place_4_b && next_state->white_player_2 != new_place_4_b)
+					{
+						winning_state->addNeighbour(next_state, false);
+						//next_state->printCurrent();
+						break;
+					}
 				}
 			}
 		}
@@ -500,30 +512,21 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size ) * (size - 2),(size) * (size - 1) };
-			bool flag = 1;
-			int num;
-			while (flag == 1)
-			{
-				num = rand() % 4;
-				if (winning_state->black_player == places[num] || winning_state->white_player_1 == places[num] || winning_state->white_player_2 == places[num])
-				{
-					places[num] = places[(num + 1) % 4];
-				}
-				else
-					flag = 0;
-			}
-			int new_place_4_b = places[num];
-
+			int places[4] = { 0,size - 1,(size) * (size-1),(size) * (size)-1 };
 			boardState* next_state;
 			for (size_t j = 0; j < all_states->size(); j++)
 			{
-				next_state = (boardState*)all_states->at(j);
-				if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b)
+				for (int k = 0; k < 4; k++)
 				{
-					winning_state->addNeighbour(next_state, false);
-					//next_state->printCurrent();
-					break;
+					int new_place_4_b = places[k];
+					next_state = (boardState*)all_states->at(j);
+					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
+						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
+					{
+						winning_state->addNeighbour(next_state, false);
+						//next_state->printCurrent();
+						break;
+					}
 				}
 			}
 		}
@@ -537,30 +540,21 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 2),(size) * (size - 1) };
-			bool flag = 1;
-			int num;
-			while (flag == 1)
-			{
-				num = rand() % 4;
-				if (winning_state->black_player == places[num] || winning_state->white_player_1 == places[num] || winning_state->white_player_2 == places[num])
-				{
-					places[num] = places[(num + 1) % 4];
-				}
-				else
-					flag = 0;
-			}
-			int new_place_4_b = places[num];
-
+			int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
 			boardState* next_state;
 			for (size_t j = 0; j < all_states->size(); j++)
 			{
-				next_state = (boardState*)all_states->at(j);
-				if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b)
+				for (int k = 0; k < 4; k++)
 				{
-					winning_state->addNeighbour(next_state, false);
-					//next_state->printCurrent();
-					break;
+					int new_place_4_b = places[k];
+					next_state = (boardState*)all_states->at(j);
+					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
+						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
+					{
+						winning_state->addNeighbour(next_state, false);
+						//next_state->printCurrent();
+						break;
+					}
 				}
 			}
 		}
@@ -574,30 +568,21 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 2),(size) * (size - 1) };
-			bool flag = 1;
-			int num;
-			while (flag == 1)
-			{
-				num = rand() % 4;
-				if (winning_state->black_player == places[num] || winning_state->white_player_1 == places[num] || winning_state->white_player_2 == places[num])
-				{
-					places[num] = places[(num + 1) % 4];
-				}
-				else
-					flag = 0;
-			}
-			int new_place_4_b = places[num];
-
+			int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
 			boardState* next_state;
 			for (size_t j = 0; j < all_states->size(); j++)
 			{
-				next_state = (boardState*)all_states->at(j);
-				if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b)
+				for (int k = 0; k < 4; k++)
 				{
-					winning_state->addNeighbour(next_state, false);
-					//next_state->printCurrent();
-					break;
+					int new_place_4_b = places[k];
+					next_state = (boardState*)all_states->at(j);
+					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
+						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
+					{
+						winning_state->addNeighbour(next_state, false);
+						//next_state->printCurrent();
+						break;
+					}
 				}
 			}
 		}
@@ -614,21 +599,26 @@ void PlayHarderGame(int size)
 	{
 		cout << " This Graph Has the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
+		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
 		cin >> num;
 		if (num == 1)
 		{
-			tryContradictTheHarderGameTrue(*newG,g, false);
+			tryContradictTheHarderGameTrue(*newG,g, false,false);
 		}
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
 			else
-				cout << "You pressed the wrong option, Good Bye" << endl;
+				if (num == 2)
+					tryContradictTheHarderGameTrue(*newG, g, false,true);
+				else
+					cout << "You pressed the wrong option, Good Bye" << endl;
 	}
 	else
 	{
 		cout << " This Graph doesnt have the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
+		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
 		cin >> num;
 		if (num == 1)
 		{

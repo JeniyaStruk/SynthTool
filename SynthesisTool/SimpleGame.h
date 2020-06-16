@@ -20,9 +20,10 @@ public:
 	int white_player_2;
 	int black_player;
 	int boardSize;
+	vector<int> *numsToErase;
 
-	boardState(int index, bool prop, int size) :Node(index, prop), boardSize(size) {}
-	void printCurrent()
+	boardState(int index, bool prop, int size) :Node(index, prop), boardSize(size) { numsToErase = NULL; }
+	void printCurrent(bool obstacles=false)
 	{
 		//get white pawns cordinates
 		int white_1 = white_player_1;
@@ -41,10 +42,12 @@ public:
 		bool flag = 0;
 		if (black_player == white_player_1 || black_player == white_player_2)
 			flag = 1;
+		int index = 0;
 		for (int i = 0; i < boardSize; i++)
 		{
 			for (int j = 0; j < boardSize; j++)
 			{
+
 				if ((j == white_1_x) && (i == white_1_y) && (j == black_1_x) && (i == black_1_y))
 					cout << "_W&B_ | ";
 				else
@@ -60,7 +63,23 @@ public:
 								if ((j == black_1_x) && (i == black_1_y))
 									cout << "__B__ | ";
 								else
-									cout << "_____ | ";
+									if (obstacles)
+									{
+										bool flag1 = false;
+										for (size_t p = 0; p < numsToErase->size(); p++)
+										{
+											if (index == numsToErase->at(p))
+												flag1 = true;
+										}
+										if(flag1==true)
+											cout << "_XXX_ | ";
+										else
+											cout << "_____ | ";
+									}
+									else
+										cout << "_____ | ";
+
+				index++;
 			}
 			cout << endl;
 		}
@@ -68,17 +87,67 @@ public:
 			cout << "SYSTEM WINSS!!!!!!" << endl << endl;
 		cout << endl << endl;
 	}
+
+	
 };
 
-
-void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP)
+void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 {
-	int num = 0;
+	int index = 0;
+	int wPawn = (boardSize - 1) * boardSize;
+	int bPawn = wPawn + boardSize - 1;
+	for (int i = 0; i < boardSize; i++)
+	{
+		for (int j = 0; j < boardSize; j++)
+		{
+			bool flag = false;
+			for (size_t k = 0; k < numsToErase.size(); k++)
+			{
+				if (numsToErase[k] == index)
+				{
+					flag = true;
+				}
+			}
+			if (flag == 1)
+				cout << "___X__ |";
+			else
+			{
+				if (index == 0 || index == wPawn || index == bPawn)
+				{
+					if(index == bPawn)
+						cout << "__B" <<"P" << "__ |";
+					else
+						cout << "__W" << "P" << "__ |";
+				}
+				else
+				{
+					if (index <= 9)
+						cout << "___" << index << "__ |";
+					else
+						cout << "__" << index << "__ |";
+				}
+			}
+
+			index++;
+		}
+		cout << endl;
+	}
+	cout << endl ;
+}
+
+void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP,bool randomize_run,bool obstacles)
+{
+	int num = 0,num_of_moves;
 	bool flag, EnvTurn = true;
 	OriginNode* currentNode;
 	currentNode = g.q0;
 	boardState* current;
 	bool condition1;
+	if (randomize_run)
+	{
+		cout << "how many randomized moves do you want to see?" << endl;
+		cin >> num_of_moves;
+	}
 	if (GP)
 		condition1 = num != -1 && currentNode->p == true;
 	else
@@ -90,20 +159,20 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP)
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			cout << "It has " << currentNode->neigbours.size() << " neighbours System can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 
 				if (currentNode->neigbours[i]->Good)
 					num = i;
 			}
 			cout << endl << "Sys chooses V" << currentNode->neigbours[num]->index << endl;
 			current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			currentNode = currentNode->neigbours[num];
 			EnvTurn = true;
 		}
@@ -113,16 +182,23 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP)
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			cout << "It has " << currentNode->neigbours.size() << " neighbours You(Enviroment) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
-			cin >> num;
+			if (num_of_moves)
+			{
+				num_of_moves--;
+				num = rand() % currentNode->neigbours.size();
+				num = currentNode->neigbours[num]->index;
+			}
+			else
+				cin >> num;
 			size_t size = currentNode->neigbours.size();
 			for (size_t i = 0; i < size; i++)
 			{
@@ -133,7 +209,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP)
 					currentNode = currentNode->neigbours[i];
 					cout << endl << "Env chooses V" << currentNode->index << endl;
 					current = (boardState*)graph.nodes[currentNode->index];
-					current->printCurrent();
+					current->printCurrent(obstacles);
 					i = size;
 					EnvTurn = false;
 				}
@@ -166,7 +242,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP)
 	}
 }
 
-void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run)
+void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run,bool obstacles)
 {
 	int num = 0;
 	bool flag, EnvTurn = true;
@@ -184,21 +260,21 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 			cout << "==============================================================================================" << endl;
 			currentNode->printCurrent();
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			cout << "It has " << currentNode->neigbours.size() << " neighbours Environment can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
-				//currentNode->printCurrent();
+				//currentNode->printCurrent(obstacles);
 				//cout << "V" << currentNode->neigbours[i]->index << endl;
 				//current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				//current->printCurrent();
+				//current->printCurrent(obstacles);
 				if (!currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
 			}
 			if (currentNode->neigbours.size() == 0)
 			{
 				cout << "There are no nodes for Env to move on to! " << endl;
-				cout << "There go System HAS WON!! " << endl;
+				cout << "There go G(p) doesn't occur! " << endl;
 				break;
 
 			}
@@ -206,7 +282,7 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 			{
 				cout << endl << "Env chooses V" << currentNode->neigbours[num]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 				currentNode = currentNode->neigbours[num];
 				EnvTurn = false;
 			}
@@ -217,13 +293,21 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			cout << "It has " << currentNode->neigbours.size() << " neighbours You(System) can Go to" << endl;
+
+			if (currentNode->neigbours.size() == 0)
+			{
+				cout << "System has no neighbours left. It can't go anywhere." << endl;
+				cout << "There go G(p) doesn't occur! " << endl;
+				return;
+
+			}
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
 			if (randomize_run)
@@ -241,7 +325,7 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 					flag = true;
 					cout << endl << "Sys chooses V" << currentNode->neigbours[i]->index << endl;
 					current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-					current->printCurrent();
+					current->printCurrent(obstacles);
 					currentNode = currentNode->neigbours[i];
 					i = size;
 					EnvTurn = true;
@@ -265,7 +349,7 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 
 	if (condition1)
 		if (GP)
-			cout << "This node's P value is false ! " << endl << "Thank you for trying!" << endl;
+			cout << "This node's P value is false , You Have been Caught!! " << endl << "Thank you for trying!" << endl;
 		else
 			cout << "Our Always Eventually P algorithm is wrong , sorry to Disappoint from this node i cant guarentee i can go to a p node." << endl;
 	else
@@ -274,17 +358,81 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 
 void PlaySimpleGame(int size)
 {
+	int num = 0;
 	long int wholeSize = size * size;
 	vector<Node*>* all_states = new vector<Node*>();
-
+	vector<int> numsToErase;
+	bool obstacles = false;
+	cout << "Do you want to put obstacles ?  1 for yes , 0 or else for no" << endl;
+	cin >> num;
+	if (num == 1)
+	{
+		obstacles = true;
+		while (num != -1)
+		{
+			cout << "=========================================================================" << endl;
+			printCleanBoardWithNumbers(size, numsToErase);
+			cout << "Where do you want to put Obstecles?" << endl;
+			cout << "Press the number of the Space, or press -1 to end" << endl;
+			cin >> num;
+			bool flag = 0;
+			for (size_t i = 0; i < numsToErase.size(); i++)
+			{
+				if (num == numsToErase[i] )
+				{
+					cout << "Please choose another number, This one is taken" << endl;
+					flag = 1;
+				}
+			}
+			if (num == 0 || num == wholeSize - 1 || num == wholeSize - size)
+			{
+				cout << "You can't put your obstacles on the Pieces" << endl;
+				flag = 1;
+			}
+			if (num>=0 &&flag == 0 && num < wholeSize)
+			{
+				numsToErase.push_back(num);
+			}
+			else
+				if(num!=-1)
+					cout << "Please follow the rules" << endl;
+		}
+	}
+	else
+	{
+		cout << "You chose No obstacles , We will start the Game." << endl;
+	}
+	cout << "-----------------------------------------------------------------" << endl;
+	cout << "We will start calculating the Game." << endl;
 	int index = 0;
 	int i = 0, j = 1, k = 2;
 	for (i = 0; i < wholeSize; i++)
-		if (i != j && i != k)
+	{
+		bool flag1 = false;
+		for (size_t ind = 0; ind < numsToErase.size(); ind++)
+		{
+			if (numsToErase[ind] == i)
+				flag1 = true;
+		}
+		if (i != j && i != k && flag1==false)
 			for (j = 0; j < wholeSize; j++)
-				if (j != i && j != k)
+			{
+				bool flag2 = false;
+				for (size_t ind = 0; ind < numsToErase.size(); ind++)
+				{
+					if (numsToErase[ind] == j)
+						flag2 = true;
+				}
+				if (j != i && j != k && flag2 == false)
 					for (k = 0; k < wholeSize; k++)
-						if (k != i && k != j)
+					{
+						bool flag3 = false;
+						for (size_t ind = 0; ind < numsToErase.size(); ind++)
+						{
+							if (numsToErase[ind] == k)
+								flag3 = true;
+						}
+						if (k != i && k != j&& flag3==false)
 						{
 							//cout << " i = " << i << " j = " << j << " k = " << k << endl;
 							boardState* new_state = new boardState(index, true, size);
@@ -292,8 +440,13 @@ void PlaySimpleGame(int size)
 							new_state->white_player_1 = i;
 							new_state->white_player_2 = j;
 							new_state->black_player = k;
+							new_state->numsToErase = &numsToErase;
 							all_states->push_back(new_state);
+							//new_state->printCurrent(obstacles);
 						}
+					}
+			}
+	}
 	//now lets connect nodes with Sys arches (white moves)
 
 
@@ -371,42 +524,42 @@ void PlaySimpleGame(int size)
 
 
 			//cout << "State I" << endl;
-			//all_states->at(i_n)->printCurrent();
+			//all_states->at(i_n)->printCurrent(obstacles);
 			//cout << "State J" << endl;
-			//all_states->at(j_n)->printCurrent();
+			//all_states->at(j_n)->printCurrent(obstacles);
 			//cout << "-----------------------------------------------------------------------" << endl;
 			//white_1 moves
 
 			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x + 1) && (white_1_y == white_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count--;
 			}
 			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x - 1) && (white_1_y == white_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count--;
 			}
 			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x) && (white_1_y == white_1_y_2 + 1))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count--;
 			}
 			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x) && (white_1_y == white_1_y_2 - 1))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count--;
 			}
 
@@ -415,33 +568,33 @@ void PlaySimpleGame(int size)
 			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 + 1 == white_2_x) && (white_2_y == white_2_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_2--;
 			}
 			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 - 1 == white_2_x) && (white_2_y == white_2_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_2--;
 			}
 			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 == white_2_x) && (white_2_y + 1 == white_2_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_2--;
 			}
 			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 == white_2_x) && (white_2_y - 1 == white_2_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_2--;
 			}
 
@@ -450,33 +603,33 @@ void PlaySimpleGame(int size)
 			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 + 1 == black_1_x) && (black_1_y == black_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_3--;
 			}
 			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 - 1 == black_1_x) && (black_1_y == black_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_3--;
 			}
 			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 == black_1_x) && (black_1_y + 1 == black_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_3--;
 			}
 			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 == black_1_x) && (black_1_y - 1 == black_1_y_2))
 			{
 				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent();
+				//all_states->at(i_n)->printCurrent(obstacles);
 				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent();
+				//all_states->at(j_n)->printCurrent(obstacles);
 				count_3--;
 			}
 
@@ -533,13 +686,14 @@ void PlaySimpleGame(int size)
 			winning_state->white_player_1 = current->black_player;
 			winning_state->white_player_2 = current->white_player_2;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, false);
 
 
 
 			//current->addNeighbour(winning_state, false);
-			//current->printCurrent();
+			//current->printCurrent(obstacles);
 		}
 		if ((black_1_x == white_2_x + 1 || black_1_x == white_2_x - 1) && black_1_y == white_2_y)
 		{
@@ -548,11 +702,12 @@ void PlaySimpleGame(int size)
 			winning_state->white_player_1 = current->white_player_1;
 			winning_state->white_player_2 = current->black_player;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, false);
 
 			//current->addNeighbour(winning_state, false);
-			//current->printCurrent();
+			//current->printCurrent(obstacles);
 		}
 
 		if ((black_1_y == white_1_y + 1 || black_1_y == white_1_y - 1) && black_1_x == white_1_x)
@@ -562,11 +717,12 @@ void PlaySimpleGame(int size)
 			winning_state->white_player_1 = current->black_player;
 			winning_state->white_player_2 = current->white_player_2;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, false);
 
 			//current->addNeighbour(winning_state, false);
-			//current->printCurrent();
+			//current->printCurrent(obstacles);
 		}
 		if ((black_1_y == white_2_y + 1 || black_1_y == white_2_y - 1) && black_1_x == white_2_x)
 		{
@@ -575,20 +731,19 @@ void PlaySimpleGame(int size)
 			winning_state->white_player_1 = current->white_player_1;
 			winning_state->white_player_2 = current->black_player;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, false);
 
 			//current->addNeighbour(winning_state, false);
-			//current->printCurrent();
+			//current->printCurrent(obstacles);
 		}
 
 
 	}
 
-
-	int num;
 	boardState* current = (boardState*)q0;
-	current->printCurrent();
+	current->printCurrent(obstacles);
 	Graph g(*all_states, q0);
 
 	OriginGraph* newG = makeASeperatedGraph(g);
@@ -596,15 +751,18 @@ void PlaySimpleGame(int size)
 	{
 		cout << " This Graph Has the Always P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
-		cout << "Or .. do you want to see a randomized run ?" << endl;
+		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
 		cin >> num;
 		if (num == 1)
-			tryContradictTrueTheGame(*newG, g, true);
+			tryContradictTrueTheGame(*newG, g, true,false, obstacles);
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
 			else
-				cout << "You pressed the wrong option, Good Bye" << endl;
+				if (num == 2)
+					tryContradictTrueTheGame(*newG, g, true, true, obstacles);
+				else
+					cout << "You pressed the wrong option, Good Bye" << endl;
 	}
 	else
 	{
@@ -614,14 +772,14 @@ void PlaySimpleGame(int size)
 		cin >> num;
 		if (num == 1)
 		{
-			tryContradictFalseTheGame(*newG, g, true,false);
+			tryContradictFalseTheGame(*newG, g, true,false,obstacles);
 		}
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
 			else
 				if (num == 2)
-					tryContradictFalseTheGame(*newG, g, true, true);
+					tryContradictFalseTheGame(*newG, g, true, true, obstacles);
 				else
 				cout << "You pressed the wrong option, Good Bye" << endl;
 	}
