@@ -5,7 +5,7 @@
 #include "OriginNode.h"
 #include "OriginGraph.h"
 #include <ctype.h>
-
+#include <ctime>
 /*
 	makes a graph from the original graph , but the new graph has devided nodes.
 	nodes that its the enviroments turn when we are at them , and nodes that its the System tun when we are at them.

@@ -12,7 +12,8 @@
 #include <fstream>
 #include <string>
 #include <ctype.h>
-
+#include <chrono> 
+using namespace std::chrono; 
 class boardState : public Node
 {
 public:
@@ -363,8 +364,10 @@ void PlaySimpleGame(int size)
 	vector<Node*>* all_states = new vector<Node*>();
 	vector<int> numsToErase;
 	bool obstacles = false;
+
 	cout << "Do you want to put obstacles ?  1 for yes , 0 or else for no" << endl;
-	cin >> num;
+	//cin >> num;
+	num = 0;
 	if (num == 1)
 	{
 		obstacles = true;
@@ -402,8 +405,10 @@ void PlaySimpleGame(int size)
 	{
 		cout << "You chose No obstacles , We will start the Game." << endl;
 	}
+	
 	cout << "-----------------------------------------------------------------" << endl;
 	cout << "We will start calculating the Game." << endl;
+	//auto start = steady_clock::now();
 	int index = 0;
 	int i = 0, j = 1, k = 2;
 	for (i = 0; i < wholeSize; i++)
@@ -448,8 +453,8 @@ void PlaySimpleGame(int size)
 			}
 	}
 	//now lets connect nodes with Sys arches (white moves)
-
-
+	//auto end_part_1 = steady_clock::now();
+	//auto duration_p1 = duration_cast<microseconds>(end_part_1 - start);
 	bool warningFlag = 0;
 	Node* q0 = NULL;
 
@@ -498,7 +503,7 @@ void PlaySimpleGame(int size)
 		if (black_1_y == size - 1)
 			count_3--;
 
-		if (white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
+		if (q0==NULL&&white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
 			q0 = all_states->at(i_n);
 
 		//connectin all states that act as moves for each pawn.
@@ -518,9 +523,9 @@ void PlaySimpleGame(int size)
 			int black_1_x_2 = black_1_2 % size;
 			int black_1_y_2 = black_1_2 / size;
 
-			bool flag_white_1_same_place = (white_1_x == white_1_x_2) && (white_1_y == white_1_y_2);
-			bool flag_white_2_same_place = (white_2_x == white_2_x_2) && (white_2_y == white_2_y_2);
-			bool flag_black_1_same_place = (black_1_x == black_1_x_2) && (black_1_y == black_1_y_2);
+			bool flag_white_1_same_place = current->white_player_1 == current_2->white_player_1;
+			bool flag_white_2_same_place = current->white_player_2 == current_2->white_player_2;
+			bool flag_black_1_same_place = current->black_player == current_2->black_player;
 
 
 			//cout << "State I" << endl;
@@ -529,111 +534,83 @@ void PlaySimpleGame(int size)
 			//all_states->at(j_n)->printCurrent(obstacles);
 			//cout << "-----------------------------------------------------------------------" << endl;
 			//white_1 moves
-
-			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x + 1) && (white_1_y == white_1_y_2))
+			if (flag_white_2_same_place && flag_black_1_same_place)
 			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count--;
+				if ((white_1_y == white_1_y_2))
+				{
+					if (white_1_x_2 == white_1_x + 1|| white_1_x_2 == white_1_x - 1)
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with sys Arch (white)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count--;
+					}
+				}
+				if (white_1_x_2 == white_1_x)
+				{
+					if (white_1_y == white_1_y_2 + 1|| white_1_y == white_1_y_2 - 1)
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with sys Arch (white)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count--;
+					}
+				}
 			}
-			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x - 1) && (white_1_y == white_1_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count--;
-			}
-			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x) && (white_1_y == white_1_y_2 + 1))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count--;
-			}
-			if (flag_white_2_same_place && flag_black_1_same_place && (white_1_x_2 == white_1_x) && (white_1_y == white_1_y_2 - 1))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count--;
-			}
-
 			//white _ 2 moves.
-
-			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 + 1 == white_2_x) && (white_2_y == white_2_y_2))
+			if (flag_white_1_same_place && flag_black_1_same_place)
 			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_2--;
+				if (white_2_y == white_2_y_2)
+				{
+					if (white_2_x_2 + 1 == white_2_x|| white_2_x_2 - 1 == white_2_x)
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with sys Arch (white)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count_2--;
+					}
+				}
+				if (white_2_x_2 == white_2_x)
+				{
+					if (white_2_y + 1 == white_2_y_2|| white_2_y - 1 == white_2_y_2)
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with sys Arch (white)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count_2--;
+					}
+				}
 			}
-			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 - 1 == white_2_x) && (white_2_y == white_2_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_2--;
-			}
-			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 == white_2_x) && (white_2_y + 1 == white_2_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_2--;
-			}
-			if (flag_white_1_same_place && flag_black_1_same_place && (white_2_x_2 == white_2_x) && (white_2_y - 1 == white_2_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with sys Arch (white)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_2--;
-			}
-
 			//black moves.
-
-			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 + 1 == black_1_x) && (black_1_y == black_1_y_2))
+			if (flag_white_1_same_place && flag_white_2_same_place)
 			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_3--;
+				if (black_1_y == black_1_y_2)
+				{
+					if (black_1_x_2 + 1 == black_1_x|| black_1_x_2 - 1 == black_1_x)
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with Env Arch (black)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count_3--;
+					}
+				}
+				if (black_1_x_2 == black_1_x)
+				{
+					if (black_1_y + 1 == black_1_y_2|| (black_1_y - 1 == black_1_y_2))
+					{
+						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
+						//all_states->at(i_n)->printCurrent(obstacles);
+						//cout << "connected with Env Arch (black)" << endl;
+						//all_states->at(j_n)->printCurrent(obstacles);
+						count_3--;
+					}
+				}
 			}
-			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 - 1 == black_1_x) && (black_1_y == black_1_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_3--;
-			}
-			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 == black_1_x) && (black_1_y + 1 == black_1_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_3--;
-			}
-			if (flag_white_1_same_place && flag_white_2_same_place && (black_1_x_2 == black_1_x) && (black_1_y - 1 == black_1_y_2))
-			{
-				all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-				//all_states->at(i_n)->printCurrent(obstacles);
-				//cout << "connected with Env Arch (black)" << endl;
-				//all_states->at(j_n)->printCurrent(obstacles);
-				count_3--;
-			}
-
-
 			if (count < 0 || count_2 < 0 || count_3 < 0)
 			{
 				cout << " SOMETHING IS WRONGGGG!!!!!!! " << endl;
@@ -651,14 +628,12 @@ void PlaySimpleGame(int size)
 		}
 
 	}
-	//now we need to choose which nodes contain P in them (white moves where black is reachable in one step)
-	//we create a winning state 
-	//boardState* winning_state = new boardState(index, false, size);
-	//winning_state->white_player_1 = 0;
-	//winning_state->white_player_2 = 0;
-	//winning_state->black_player = 0;
 
-	//all_states->push_back(winning_state);
+	//auto end_part_2 = steady_clock::now();
+	//auto duration_p2 = duration_cast<microseconds>(end_part_2 - end_part_1);
+	
+
+	//now we need to choose which nodes contain P in them (white moves where black is reachable in one step)
 	//adding all states that should connect to the winning state.
 	for (size_t i = 0; i < all_states->size(); i++)
 	{
@@ -679,7 +654,7 @@ void PlaySimpleGame(int size)
 		int black_1_x = black_1 % size;
 		int black_1_y = black_1 / size;
 
-		if ((black_1_x == white_1_x + 1 || black_1_x == white_1_x - 1) && black_1_y == white_1_y)
+		if (black_1_y == white_1_y && (black_1_x == white_1_x + 1 || black_1_x == white_1_x - 1))
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -690,12 +665,10 @@ void PlaySimpleGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, false);
 
-
-
 			//current->addNeighbour(winning_state, false);
 			//current->printCurrent(obstacles);
 		}
-		if ((black_1_x == white_2_x + 1 || black_1_x == white_2_x - 1) && black_1_y == white_2_y)
+		if (black_1_y == white_2_y &&(black_1_x == white_2_x + 1 || black_1_x == white_2_x - 1))
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -710,7 +683,7 @@ void PlaySimpleGame(int size)
 			//current->printCurrent(obstacles);
 		}
 
-		if ((black_1_y == white_1_y + 1 || black_1_y == white_1_y - 1) && black_1_x == white_1_x)
+		if (black_1_x == white_1_x &&(black_1_y == white_1_y + 1 || black_1_y == white_1_y - 1) )
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -724,7 +697,7 @@ void PlaySimpleGame(int size)
 			//current->addNeighbour(winning_state, false);
 			//current->printCurrent(obstacles);
 		}
-		if ((black_1_y == white_2_y + 1 || black_1_y == white_2_y - 1) && black_1_x == white_2_x)
+		if (black_1_x == white_2_x && (black_1_y == white_2_y + 1 || black_1_y == white_2_y - 1) )
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -742,11 +715,19 @@ void PlaySimpleGame(int size)
 
 	}
 
+	
+
 	boardState* current = (boardState*)q0;
 	current->printCurrent(obstacles);
 	Graph g(*all_states, q0);
+	//auto end_part_3 = steady_clock::now();
+	//auto duration_p3 = duration_cast<microseconds>(end_part_3 - end_part_2);
+	
 
 	OriginGraph* newG = makeASeperatedGraph(g);
+	auto end_part_4 = steady_clock::now();
+	//auto duration_p4 = duration_cast<microseconds>(end_part_4 - end_part_3);
+	//auto duration = duration_cast<microseconds>(end_part_4 - start);
 	if (alwaysP(*newG))
 	{
 		cout << " This Graph Has the Always P Propery " << endl;
@@ -766,6 +747,17 @@ void PlaySimpleGame(int size)
 	}
 	else
 	{
+		/*auto end = steady_clock::now();;
+		auto duration_gp = duration_cast<microseconds>(end - end_part_4);
+		auto all_time = duration_cast<microseconds>(end - end_part_2);
+		cout << "p1 took " << duration_p1.count() << "us to calculate" << endl;
+		cout << "p2 took " << duration_p2.count() << "us to calculate" << endl;
+		cout << "p3 took " << duration_p3.count() << "us to calculate" << endl;
+		cout << "p4 Took " << duration_p4.count() << "us to calculate" << endl;
+		cout << "MS Took " << duration.count() << "us to calculate" << endl;
+		cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
+		cout << "It took " << all_time.count() << "us to calculate ALL " << endl<<endl;*/
+
 		cout << " This Graph doesnt have the Always P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;

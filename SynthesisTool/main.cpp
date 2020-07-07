@@ -152,6 +152,10 @@ void tryContradictFalse(OriginGraph &g, bool GP)
 					cout << "Please choose a node that is a neighbour , or choose -1 to quit" << endl;
 			}
 		}
+		if (GP)
+			condition1 = num != -1 && currentNode->p == true;
+		else
+			condition1 = num != -1 && currentNode->Good == true;
 	}
 	if (GP)
 		condition1 = (currentNode->p == false);

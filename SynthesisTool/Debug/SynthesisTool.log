@@ -1,3 +1,3 @@
 ﻿  main.cpp
-F:\SynthesisTool\SynthesisTool\main.cpp(237,19): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
+F:\SynthesisTool\SynthesisTool\main.cpp(241,19): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
   SynthesisTool.vcxproj -> F:\SynthesisTool\Debug\SynthesisTool.exe
