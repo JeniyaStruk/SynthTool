@@ -531,9 +531,9 @@ void PlayHarderGame(int size)
 	{
 		auto end = steady_clock::now();;
 		auto duration_gp = duration_cast<microseconds>(end - end_part_4);
-		cout << "MS Took " << duration.count() << "us to calculate" << endl;
-		cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
-		cout << "States - " << newG->nodes.size() << endl;
+		//cout << "MS Took " << duration.count() << "us to calculate" << endl;
+		//cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
+		//cout << "States - " << newG->nodes.size() << endl;
 		cout << " This Graph Has the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
