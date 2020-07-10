@@ -14,8 +14,8 @@ using namespace std::chrono;
 
 void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool randomize_run)
 {
-	
-	int num = 0,num_of_moves=1;
+
+	int num = 0, num_of_moves = 1;
 	bool flag, EnvTurn = true;
 	OriginNode* currentNode;
 	currentNode = g.q0;
@@ -30,7 +30,7 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 		condition1 = num != -1 && currentNode->p == true;
 	else
 		condition1 = num != -1 && currentNode->Good == true;
-	while (condition1&& num_of_moves>0)
+	while (condition1 && num_of_moves > 0)
 	{
 		if (!EnvTurn)
 		{
@@ -227,14 +227,19 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 	else
 		cout << "Thanks for trying !" << endl;
 }
+typedef std::map<std::string, boardState*> TheMap;
+typedef std::pair<std::string, boardState*> ThePair;
 
 void PlayHarderGame(int size)
 {
+	cout << "-----------------------------------------------------------------" << endl;
+	cout << "We will start calculating the Game." << endl;
 	long int wholeSize = size * size;
 	vector<Node*>* all_states = new vector<Node*>();
 	auto start = high_resolution_clock::now();
 	int index = 0;
 	int i = 0, j = 1, k = 2;
+	TheMap myMap;
 	for (i = 0; i < wholeSize; i++)
 		if (i != j && i != k)
 			for (j = 0; j < wholeSize; j++)
@@ -249,6 +254,9 @@ void PlayHarderGame(int size)
 							new_state->white_player_2 = j;
 							new_state->black_player = k;
 							all_states->push_back(new_state);
+							string str = to_string(i);
+							str += ","; str += to_string(j); str += ","; str += to_string(k);
+							myMap.insert(ThePair(str, new_state));
 						}
 	//now lets connect nodes with Sys arches (white moves)
 
@@ -263,161 +271,144 @@ void PlayHarderGame(int size)
 		int white_1 = current->white_player_1;
 		int white_1_x = white_1 % size;
 		int white_1_y = white_1 / size;
-		int count = 4;
-		if (white_1_x == 0)
-			count--;
-		if (white_1_x == size - 1)
-			count--;
-		if (white_1_y == 0)
-			count--;
-		if (white_1_y == size - 1)
-			count--;
+
 
 		//coordinates of white_2
 		int white_2 = current->white_player_2;
 		int white_2_x = white_2 % size;
 		int white_2_y = white_2 / size;
-		int count_2 = 4;
-		if (white_2_x == 0)
-			count_2--;
-		if (white_2_x == size - 1)
-			count_2--;
-		if (white_2_y == 0)
-			count_2--;
-		if (white_2_y == size - 1)
-			count_2--;
+
 
 		//get blacks coordinates ( to make sure it doesnt move) 
 		int black_1 = current->black_player;
 		int black_1_x = black_1 % size;
 		int black_1_y = black_1 / size;
-		int count_3 = 4;
-		if (black_1_x == 0)
-			count_3--;
-		if (black_1_x == size - 1)
-			count_3--;
-		if (black_1_y == 0)
-			count_3--;
-		if (black_1_y == size - 1)
-			count_3--;
 
-		if (white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
+		if (q0 == NULL && white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
 			q0 = all_states->at(i_n);
 
-		//connectin all states that act as moves for each pawn.
-		for (size_t j_n = 0; j_n < all_states->size(); j_n++)
+
+		boardState* neigState;
+		string str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1))
 		{
-			boardState* current_2 = (boardState*)all_states->at(j_n);
+			str = to_string(white_1 - 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1))
+		{
+			str = to_string(white_1 + 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
 
-			int white_1_2 = current_2->white_player_1;
-			int white_1_x_2 = white_1_2 % size;
-			int white_1_y_2 = white_1_2 / size;
+		}
+		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size))
+		{
+			str = to_string(white_1 - size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size))
+		{
+			str = to_string(white_1 + size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
 
-			int white_2_2 = current_2->white_player_2;
-			int white_2_x_2 = white_2_2 % size;
-			int white_2_y_2 = white_2_2 / size;
+		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 - 1); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 + 1); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 - size); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 + size); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
 
-			int black_1_2 = current_2->black_player;
-			int black_1_x_2 = black_1_2 % size;
-			int black_1_y_2 = black_1_2 / size;
 
-			bool flag_white_1_same_place = current->white_player_1 == current_2->white_player_1;
-			bool flag_white_2_same_place = current->white_player_2 == current_2->white_player_2;
-			bool flag_black_1_same_place = current->black_player == current_2->black_player;
-
-
-			//cout << "State I" << endl;
-			//all_states->at(i_n)->printCurrent();
-			//cout << "State J" << endl;
-			//all_states->at(j_n)->printCurrent();
-			//cout << "-----------------------------------------------------------------------" << endl;
-			//white_1 moves
-
-			if (flag_white_2_same_place && flag_black_1_same_place)
-			{
-				if (white_1_y == white_1_y_2)
-				{
-					if (white_1_x_2 == white_1_x + 1 || white_1_x_2 == white_1_x - 1)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count--;
-					}
-				}
-				if (white_1_x_2 == white_1_x)
-				{
-					if (white_1_y == white_1_y_2 + 1 || white_1_y == white_1_y_2 - 1)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count--;
-					}
-				}
-			}
-
-			//white _ 2 moves.
-			if (flag_white_1_same_place && flag_black_1_same_place)
-			{
-				if (white_2_y == white_2_y_2)
-				{
-					if (white_2_x_2 + 1 == white_2_x || white_2_x_2 - 1 == white_2_x)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count_2--;
-					}
-				}
-				if (white_2_x_2 == white_2_x)
-				{
-					if (white_2_y + 1 == white_2_y_2 || white_2_y - 1 == white_2_y_2)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count_2--;
-					}
-				}
-			}
-			//black moves.
-			if (flag_white_1_same_place && flag_white_2_same_place )
-			{
-				if (black_1_y == black_1_y_2)
-				{
-					if (black_1_x_2 + 1 == black_1_x || black_1_x_2 - 1 == black_1_x)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with Env Arch (black)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count_3--;
-					}
-				}
-				if (black_1_x_2 == black_1_x)
-				{
-					if (black_1_y + 1 == black_1_y_2 || black_1_y - 1 == black_1_y_2)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent();
-						//cout << "connected with Env Arch (black)" << endl;
-						//all_states->at(j_n)->printCurrent();
-						count_3--;
-					}
-				}
-			}
-			if (count == 0 && (count_2 == count) && (count_3 == count))
-				break;
+		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - 1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + 1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - size);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + size);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
 		}
 	}
 
 	//adding all states that should connect to the winning state.
-	for (size_t i = 0; i < all_states->size(); i++)
+	int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
+	boardState* next_state;
+	size_t size_of_states = all_states->size();
+	for (size_t i = 0; i < size_of_states; i++)
 	{
 		boardState* current = (boardState*)all_states->at(i);
 
@@ -435,7 +426,7 @@ void PlayHarderGame(int size)
 		int black_1 = current->black_player;
 		int black_1_x = black_1 % size;
 		int black_1_y = black_1 / size;
-
+		string str;
 		if (black_1_y == white_1_y && (black_1_x == white_1_x + 1 || black_1_x == white_1_x - 1))
 		{
 			boardState* winning_state = new boardState(index, true, size);
@@ -446,21 +437,16 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
-			boardState* next_state;
-			for (size_t j = 0; j < all_states->size(); j++)
+			for (int k = 0; k < 4; k++)
 			{
-				for (int k = 0; k < 4; k++)
+				int new_place_4_b = places[k];
+				if (winning_state->white_player_1 != new_place_4_b && winning_state->white_player_2 != new_place_4_b)
 				{
-					int new_place_4_b = places[k];
-					next_state = (boardState*)all_states->at(j);
-					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
-						&& next_state->white_player_1!= new_place_4_b && next_state->white_player_2 != new_place_4_b)
-					{
-						winning_state->addNeighbour(next_state, false);
-						//next_state->printCurrent();
-						break;
-					}
+					str = to_string(winning_state->white_player_1); str += ","; str += to_string(winning_state->white_player_2); str += ","; str += to_string(new_place_4_b);
+					next_state = myMap[str];
+					winning_state->addNeighbour(next_state, false);
+					//winning_state->printCurrent();
+					//next_state->printCurrent();
 				}
 			}
 		}
@@ -474,21 +460,16 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size-1),(size) * (size)-1 };
-			boardState* next_state;
-			for (size_t j = 0; j < all_states->size(); j++)
+			for (int k = 0; k < 4; k++)
 			{
-				for (int k = 0; k < 4; k++)
+				int new_place_4_b = places[k];
+				if (winning_state->white_player_1 != new_place_4_b && winning_state->white_player_2 != new_place_4_b)
 				{
-					int new_place_4_b = places[k];
-					next_state = (boardState*)all_states->at(j);
-					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
-						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
-					{
-						winning_state->addNeighbour(next_state, false);
-						//next_state->printCurrent();
-						break;
-					}
+					str = to_string(winning_state->white_player_1); str += ","; str += to_string(winning_state->white_player_2); str += ","; str += to_string(new_place_4_b);
+					next_state = myMap[str];
+					winning_state->addNeighbour(next_state, false);
+					//winning_state->printCurrent();
+					//next_state->printCurrent();
 				}
 			}
 		}
@@ -502,21 +483,16 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
-			boardState* next_state;
-			for (size_t j = 0; j < all_states->size(); j++)
+			for (int k = 0; k < 4; k++)
 			{
-				for (int k = 0; k < 4; k++)
+				int new_place_4_b = places[k];
+				if (winning_state->white_player_1 != new_place_4_b && winning_state->white_player_2 != new_place_4_b)
 				{
-					int new_place_4_b = places[k];
-					next_state = (boardState*)all_states->at(j);
-					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
-						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
-					{
-						winning_state->addNeighbour(next_state, false);
-						//next_state->printCurrent();
-						break;
-					}
+					str = to_string(winning_state->white_player_1); str += ","; str += to_string(winning_state->white_player_2); str += ","; str += to_string(new_place_4_b);
+					next_state = myMap[str];
+					winning_state->addNeighbour(next_state, false);
+					//winning_state->printCurrent();
+					//next_state->printCurrent();
 				}
 			}
 		}
@@ -530,21 +506,16 @@ void PlayHarderGame(int size)
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
-			int places[4] = { 0,size - 1,(size) * (size - 1),(size) * (size)-1 };
-			boardState* next_state;
-			for (size_t j = 0; j < all_states->size(); j++)
+			for (int k = 0; k < 4; k++)
 			{
-				for (int k = 0; k < 4; k++)
+				int new_place_4_b = places[k];
+				if (winning_state->white_player_1 != new_place_4_b && winning_state->white_player_2 != new_place_4_b)
 				{
-					int new_place_4_b = places[k];
-					next_state = (boardState*)all_states->at(j);
-					if (next_state->white_player_1 == winning_state->white_player_1 && next_state->white_player_2 == winning_state->white_player_2 && next_state->black_player == new_place_4_b
-						&& next_state->white_player_1 != new_place_4_b && next_state->white_player_2 != new_place_4_b)
-					{
-						winning_state->addNeighbour(next_state, false);
-						//next_state->printCurrent();
-						break;
-					}
+					str = to_string(winning_state->white_player_1); str += ","; str += to_string(winning_state->white_player_2); str += ","; str += to_string(new_place_4_b);
+					next_state = myMap[str];
+					winning_state->addNeighbour(next_state, false);
+					//winning_state->printCurrent();
+					//next_state->printCurrent();
 				}
 			}
 		}
@@ -554,23 +525,30 @@ void PlayHarderGame(int size)
 	current->printCurrent();
 	Graph g(*all_states, q0);
 	OriginGraph* newG = makeASeperatedGraph(g);
+	auto end_part_4 = steady_clock::now();
+	auto duration = duration_cast<microseconds>(end_part_4 - start);
 	if (alwaysEventuallyP(*newG))
 	{
-
+		auto end = steady_clock::now();;
+		auto duration_gp = duration_cast<microseconds>(end - end_part_4);
+		cout << "MS Took " << duration.count() << "us to calculate" << endl;
+		cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
+		cout << "States - " << newG->nodes.size() << endl;
 		cout << " This Graph Has the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
-		cin >> num;
+		//cin >> num;
+		num = 0;
 		if (num == 1)
 		{
-			tryContradictTheHarderGameTrue(*newG,g, false,false);
+			tryContradictTheHarderGameTrue(*newG, g, false, false);
 		}
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
 			else
 				if (num == 2)
-					tryContradictTheHarderGameTrue(*newG, g, false,true);
+					tryContradictTheHarderGameTrue(*newG, g, false, true);
 				else
 					cout << "You pressed the wrong option, Good Bye" << endl;
 	}
@@ -582,7 +560,7 @@ void PlayHarderGame(int size)
 		cin >> num;
 		if (num == 1)
 		{
-			tryContradictTheHarderGameFalse(*newG,g, false);
+			tryContradictTheHarderGameFalse(*newG, g, false);
 		}
 		else
 			if (num == 0)

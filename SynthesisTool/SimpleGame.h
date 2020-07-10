@@ -13,7 +13,8 @@
 #include <string>
 #include <ctype.h>
 #include <chrono> 
-using namespace std::chrono; 
+#include <map>
+using namespace std::chrono;
 class boardState : public Node
 {
 public:
@@ -21,10 +22,10 @@ public:
 	int white_player_2;
 	int black_player;
 	int boardSize;
-	vector<int> *numsToErase;
+	vector<int>* numsToErase;
 
 	boardState(int index, bool prop, int size) :Node(index, prop), boardSize(size) { numsToErase = NULL; }
-	void printCurrent(bool obstacles=false)
+	void printCurrent(bool obstacles = false)
 	{
 		//get white pawns cordinates
 		int white_1 = white_player_1;
@@ -72,7 +73,7 @@ public:
 											if (index == numsToErase->at(p))
 												flag1 = true;
 										}
-										if(flag1==true)
+										if (flag1 == true)
 											cout << "_XXX_ | ";
 										else
 											cout << "_____ | ";
@@ -89,7 +90,19 @@ public:
 		cout << endl << endl;
 	}
 
-	
+};
+
+class key3 {
+public:
+	int w1;
+	int w2;
+	int b1;
+
+	key3(int w1_, int w2_, int b1_) :w1(w1_), w2(w2_), b1(b1_) {}
+	bool comp(key3 second)
+	{
+		return ((w1 == second.w1) && (w2 == second.w2) && (b1 == second.b1));
+	}
 };
 
 void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
@@ -115,8 +128,8 @@ void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 			{
 				if (index == 0 || index == wPawn || index == bPawn)
 				{
-					if(index == bPawn)
-						cout << "__B" <<"P" << "__ |";
+					if (index == bPawn)
+						cout << "__B" << "P" << "__ |";
 					else
 						cout << "__W" << "P" << "__ |";
 				}
@@ -133,12 +146,12 @@ void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 		}
 		cout << endl;
 	}
-	cout << endl ;
+	cout << endl;
 }
 
-void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP,bool randomize_run,bool obstacles)
+void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run, bool obstacles)
 {
-	int num = 0,num_of_moves;
+	int num = 0, num_of_moves;
 	bool flag, EnvTurn = true;
 	OriginNode* currentNode;
 	currentNode = g.q0;
@@ -243,7 +256,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP,bool randomi
 	}
 }
 
-void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run,bool obstacles)
+void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run, bool obstacles)
 {
 	int num = 0;
 	bool flag, EnvTurn = true;
@@ -357,6 +370,9 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 		cout << "Thanks for trying !" << endl;
 }
 
+typedef std::map<std::string, boardState*> TheMap;
+typedef std::pair<std::string, boardState*> ThePair;
+
 void PlaySimpleGame(int size)
 {
 	int num = 0;
@@ -381,7 +397,7 @@ void PlaySimpleGame(int size)
 			bool flag = 0;
 			for (size_t i = 0; i < numsToErase.size(); i++)
 			{
-				if (num == numsToErase[i] )
+				if (num == numsToErase[i])
 				{
 					cout << "Please choose another number, This one is taken" << endl;
 					flag = 1;
@@ -392,12 +408,12 @@ void PlaySimpleGame(int size)
 				cout << "You can't put your obstacles on the Pieces" << endl;
 				flag = 1;
 			}
-			if (num>=0 &&flag == 0 && num < wholeSize)
+			if (num >= 0 && flag == 0 && num < wholeSize)
 			{
 				numsToErase.push_back(num);
 			}
 			else
-				if(num!=-1)
+				if (num != -1)
 					cout << "Please follow the rules" << endl;
 		}
 	}
@@ -405,12 +421,14 @@ void PlaySimpleGame(int size)
 	{
 		cout << "You chose No obstacles , We will start the Game." << endl;
 	}
-	
+
 	cout << "-----------------------------------------------------------------" << endl;
 	cout << "We will start calculating the Game." << endl;
-	//auto start = steady_clock::now();
+	auto start = steady_clock::now();
 	int index = 0;
 	int i = 0, j = 1, k = 2;
+	TheMap myMap;
+
 	for (i = 0; i < wholeSize; i++)
 	{
 		bool flag1 = false;
@@ -419,7 +437,7 @@ void PlaySimpleGame(int size)
 			if (numsToErase[ind] == i)
 				flag1 = true;
 		}
-		if (i != j && i != k && flag1==false)
+		if (i != j && i != k && flag1 == false)
 			for (j = 0; j < wholeSize; j++)
 			{
 				bool flag2 = false;
@@ -437,7 +455,7 @@ void PlaySimpleGame(int size)
 							if (numsToErase[ind] == k)
 								flag3 = true;
 						}
-						if (k != i && k != j&& flag3==false)
+						if (k != i && k != j && flag3 == false)
 						{
 							//cout << " i = " << i << " j = " << j << " k = " << k << endl;
 							boardState* new_state = new boardState(index, true, size);
@@ -447,14 +465,17 @@ void PlaySimpleGame(int size)
 							new_state->black_player = k;
 							new_state->numsToErase = &numsToErase;
 							all_states->push_back(new_state);
+							string str = to_string(i);
+							str += ","; str += to_string(j); str += ","; str += to_string(k);
+							myMap.insert(ThePair(str, new_state));
 							//new_state->printCurrent(obstacles);
 						}
 					}
 			}
 	}
 	//now lets connect nodes with Sys arches (white moves)
-	//auto end_part_1 = steady_clock::now();
-	//auto duration_p1 = duration_cast<microseconds>(end_part_1 - start);
+	auto end_part_1 = steady_clock::now();
+	auto duration_p1 = duration_cast<microseconds>(end_part_1 - start);
 	bool warningFlag = 0;
 	Node* q0 = NULL;
 
@@ -465,177 +486,148 @@ void PlaySimpleGame(int size)
 		int white_1 = current->white_player_1;
 		int white_1_x = white_1 % size;
 		int white_1_y = white_1 / size;
-		int count = 4;
-		if (white_1_x == 0)
-			count--;
-		if (white_1_x == size - 1)
-			count--;
-		if (white_1_y == 0)
-			count--;
-		if (white_1_y == size - 1)
-			count--;
+
 
 		//coordinates of white_2
 		int white_2 = current->white_player_2;
 		int white_2_x = white_2 % size;
 		int white_2_y = white_2 / size;
-		int count_2 = 4;
-		if (white_2_x == 0)
-			count_2--;
-		if (white_2_x == size - 1)
-			count_2--;
-		if (white_2_y == 0)
-			count_2--;
-		if (white_2_y == size - 1)
-			count_2--;
+
 
 		//get blacks coordinates ( to make sure it doesnt move) 
 		int black_1 = current->black_player;
 		int black_1_x = black_1 % size;
 		int black_1_y = black_1 / size;
-		int count_3 = 4;
-		if (black_1_x == 0)
-			count_3--;
-		if (black_1_x == size - 1)
-			count_3--;
-		if (black_1_y == 0)
-			count_3--;
-		if (black_1_y == size - 1)
-			count_3--;
 
-		if (q0==NULL&&white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
+		if (q0 == NULL && white_1_x == 0 && white_1_y == 0 && white_2_x == 0 && white_2_y == size - 1 && black_1_x == size - 1 && black_1_y == size - 1)
 			q0 = all_states->at(i_n);
 
-		//connectin all states that act as moves for each pawn.
-		for (size_t j_n = 0; j_n < all_states->size(); j_n++)
+
+		boardState* neigState;
+		string str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1))
 		{
-			boardState* current_2 = (boardState*)all_states->at(j_n);
-
-			int white_1_2 = current_2->white_player_1;
-			int white_1_x_2 = white_1_2 % size;
-			int white_1_y_2 = white_1_2 / size;
-
-			int white_2_2 = current_2->white_player_2;
-			int white_2_x_2 = white_2_2 % size;
-			int white_2_y_2 = white_2_2 / size;
-
-			int black_1_2 = current_2->black_player;
-			int black_1_x_2 = black_1_2 % size;
-			int black_1_y_2 = black_1_2 / size;
-
-			bool flag_white_1_same_place = current->white_player_1 == current_2->white_player_1;
-			bool flag_white_2_same_place = current->white_player_2 == current_2->white_player_2;
-			bool flag_black_1_same_place = current->black_player == current_2->black_player;
-
-
-			//cout << "State I" << endl;
-			//all_states->at(i_n)->printCurrent(obstacles);
-			//cout << "State J" << endl;
-			//all_states->at(j_n)->printCurrent(obstacles);
-			//cout << "-----------------------------------------------------------------------" << endl;
-			//white_1 moves
-			if (flag_white_2_same_place && flag_black_1_same_place)
-			{
-				if ((white_1_y == white_1_y_2))
-				{
-					if (white_1_x_2 == white_1_x + 1|| white_1_x_2 == white_1_x - 1)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count--;
-					}
-				}
-				if (white_1_x_2 == white_1_x)
-				{
-					if (white_1_y == white_1_y_2 + 1|| white_1_y == white_1_y_2 - 1)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count--;
-					}
-				}
-			}
-			//white _ 2 moves.
-			if (flag_white_1_same_place && flag_black_1_same_place)
-			{
-				if (white_2_y == white_2_y_2)
-				{
-					if (white_2_x_2 + 1 == white_2_x|| white_2_x_2 - 1 == white_2_x)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count_2--;
-					}
-				}
-				if (white_2_x_2 == white_2_x)
-				{
-					if (white_2_y + 1 == white_2_y_2|| white_2_y - 1 == white_2_y_2)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), false);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with sys Arch (white)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count_2--;
-					}
-				}
-			}
-			//black moves.
-			if (flag_white_1_same_place && flag_white_2_same_place)
-			{
-				if (black_1_y == black_1_y_2)
-				{
-					if (black_1_x_2 + 1 == black_1_x|| black_1_x_2 - 1 == black_1_x)
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with Env Arch (black)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count_3--;
-					}
-				}
-				if (black_1_x_2 == black_1_x)
-				{
-					if (black_1_y + 1 == black_1_y_2|| (black_1_y - 1 == black_1_y_2))
-					{
-						all_states->at(i_n)->addNeighbour(all_states->at(j_n), true);
-						//all_states->at(i_n)->printCurrent(obstacles);
-						//cout << "connected with Env Arch (black)" << endl;
-						//all_states->at(j_n)->printCurrent(obstacles);
-						count_3--;
-					}
-				}
-			}
-			if (count < 0 || count_2 < 0 || count_3 < 0)
-			{
-				cout << " SOMETHING IS WRONGGGG!!!!!!! " << endl;
-				warningFlag = 1;
-				break;
-			}
-
-			if (count == 0 && (count_2 == count) && (count_3 == count))
-				break;
+			str = to_string(white_1 - 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
 		}
-		if (warningFlag == 1)
+		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1))
 		{
-			cout << " SOMETHING IS WRONGGGG!!!!!!! " << endl;
-			break;
+			str = to_string(white_1 + 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+
+		}
+		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size))
+		{
+			str = to_string(white_1 - size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size))
+		{
+			str = to_string(white_1 + size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+
+		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 - 1); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 + 1); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 - size); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2 + size); str += ","; str += to_string(black_1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, false);
+			//current->printCurrent();
+			//cout << "connected with sys Arch (white)" << endl;
+			//neigState->printCurrent();
+		}
+
+
+		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - 1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + 1);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - size);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
+		}
+		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size))
+		{
+			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + size);
+			neigState = myMap[str];
+			all_states->at(i_n)->addNeighbour(neigState, true);
+			//current->printCurrent();
+			//cout << "connected with Env Arch (black)" << endl;
+			//neigState->printCurrent();
 		}
 
 	}
 
-	//auto end_part_2 = steady_clock::now();
-	//auto duration_p2 = duration_cast<microseconds>(end_part_2 - end_part_1);
-	
+	auto end_part_2 = steady_clock::now();
+	auto duration_p2 = duration_cast<microseconds>(end_part_2 - end_part_1);
+
 
 	//now we need to choose which nodes contain P in them (white moves where black is reachable in one step)
 	//adding all states that should connect to the winning state.
-	for (size_t i = 0; i < all_states->size(); i++)
+	size_t size_of_states = all_states->size();
+	for (size_t i = 0; i < size_of_states; i++)
 	{
 		boardState* current = (boardState*)all_states->at(i);
 
@@ -668,7 +660,7 @@ void PlaySimpleGame(int size)
 			//current->addNeighbour(winning_state, false);
 			//current->printCurrent(obstacles);
 		}
-		if (black_1_y == white_2_y &&(black_1_x == white_2_x + 1 || black_1_x == white_2_x - 1))
+		if (black_1_y == white_2_y && (black_1_x == white_2_x + 1 || black_1_x == white_2_x - 1))
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -683,7 +675,7 @@ void PlaySimpleGame(int size)
 			//current->printCurrent(obstacles);
 		}
 
-		if (black_1_x == white_1_x &&(black_1_y == white_1_y + 1 || black_1_y == white_1_y - 1) )
+		if (black_1_x == white_1_x && (black_1_y == white_1_y + 1 || black_1_y == white_1_y - 1))
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -697,7 +689,7 @@ void PlaySimpleGame(int size)
 			//current->addNeighbour(winning_state, false);
 			//current->printCurrent(obstacles);
 		}
-		if (black_1_x == white_2_x && (black_1_y == white_2_y + 1 || black_1_y == white_2_y - 1) )
+		if (black_1_x == white_2_x && (black_1_y == white_2_y + 1 || black_1_y == white_2_y - 1))
 		{
 			boardState* winning_state = new boardState(index, false, size);
 			index++;
@@ -715,19 +707,19 @@ void PlaySimpleGame(int size)
 
 	}
 
-	
+
 
 	boardState* current = (boardState*)q0;
 	current->printCurrent(obstacles);
 	Graph g(*all_states, q0);
-	//auto end_part_3 = steady_clock::now();
-	//auto duration_p3 = duration_cast<microseconds>(end_part_3 - end_part_2);
-	
+	auto end_part_3 = steady_clock::now();
+	auto duration_p3 = duration_cast<microseconds>(end_part_3 - end_part_2);
+
 
 	OriginGraph* newG = makeASeperatedGraph(g);
 	auto end_part_4 = steady_clock::now();
-	//auto duration_p4 = duration_cast<microseconds>(end_part_4 - end_part_3);
-	//auto duration = duration_cast<microseconds>(end_part_4 - start);
+	auto duration_p4 = duration_cast<microseconds>(end_part_4 - end_part_3);
+	auto duration = duration_cast<microseconds>(end_part_4 - start);
 	if (alwaysP(*newG))
 	{
 		cout << " This Graph Has the Always P Propery " << endl;
@@ -735,7 +727,7 @@ void PlaySimpleGame(int size)
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
 		cin >> num;
 		if (num == 1)
-			tryContradictTrueTheGame(*newG, g, true,false, obstacles);
+			tryContradictTrueTheGame(*newG, g, true, false, obstacles);
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
@@ -747,24 +739,23 @@ void PlaySimpleGame(int size)
 	}
 	else
 	{
-		/*auto end = steady_clock::now();;
+		auto end = steady_clock::now();;
 		auto duration_gp = duration_cast<microseconds>(end - end_part_4);
-		auto all_time = duration_cast<microseconds>(end - end_part_2);
-		cout << "p1 took " << duration_p1.count() << "us to calculate" << endl;
-		cout << "p2 took " << duration_p2.count() << "us to calculate" << endl;
-		cout << "p3 took " << duration_p3.count() << "us to calculate" << endl;
-		cout << "p4 Took " << duration_p4.count() << "us to calculate" << endl;
+		//cout << "p1 took " << duration_p1.count() << "us to calculate" << endl;
+		//cout << "p2 took " << duration_p2.count() << "us to calculate" << endl;
+		//cout << "p3 took " << duration_p3.count() << "us to calculate" << endl;
+		//cout << "p4 Took " << duration_p4.count() << "us to calculate" << endl;
 		cout << "MS Took " << duration.count() << "us to calculate" << endl;
 		cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
-		cout << "It took " << all_time.count() << "us to calculate ALL " << endl<<endl;*/
-
+		cout << "States - " << newG->nodes.size() << endl;
 		cout << " This Graph doesnt have the Always P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
-		cin >> num;
+		//cin >> num;
+		num = 0;
 		if (num == 1)
 		{
-			tryContradictFalseTheGame(*newG, g, true,false,obstacles);
+			tryContradictFalseTheGame(*newG, g, true, false, obstacles);
 		}
 		else
 			if (num == 0)
@@ -773,7 +764,7 @@ void PlaySimpleGame(int size)
 				if (num == 2)
 					tryContradictFalseTheGame(*newG, g, true, true, obstacles);
 				else
-				cout << "You pressed the wrong option, Good Bye" << endl;
+					cout << "You pressed the wrong option, Good Bye" << endl;
 	}
 
 }
