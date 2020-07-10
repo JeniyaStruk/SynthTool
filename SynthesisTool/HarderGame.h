@@ -537,8 +537,8 @@ void PlayHarderGame(int size)
 		cout << " This Graph Has the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
-		//cin >> num;
-		num = 0;
+		cin >> num;
+		//num = 0;
 		if (num == 1)
 		{
 			tryContradictTheHarderGameTrue(*newG, g, false, false);

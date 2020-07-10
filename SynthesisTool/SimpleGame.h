@@ -382,8 +382,8 @@ void PlaySimpleGame(int size)
 	bool obstacles = false;
 
 	cout << "Do you want to put obstacles ?  1 for yes , 0 or else for no" << endl;
-	//cin >> num;
-	num = 0;
+	cin >> num;
+	//num = 0;
 	if (num == 1)
 	{
 		obstacles = true;
@@ -741,18 +741,18 @@ void PlaySimpleGame(int size)
 	{
 		auto end = steady_clock::now();;
 		auto duration_gp = duration_cast<microseconds>(end - end_part_4);
-		//cout << "p1 took " << duration_p1.count() << "us to calculate" << endl;
-		//cout << "p2 took " << duration_p2.count() << "us to calculate" << endl;
-		//cout << "p3 took " << duration_p3.count() << "us to calculate" << endl;
-		//cout << "p4 Took " << duration_p4.count() << "us to calculate" << endl;
+		/*cout << "p1 took " << duration_p1.count() << "us to calculate" << endl;
+		cout << "p2 took " << duration_p2.count() << "us to calculate" << endl;
+		cout << "p3 took " << duration_p3.count() << "us to calculate" << endl;
+		cout << "p4 Took " << duration_p4.count() << "us to calculate" << endl;
 		cout << "MS Took " << duration.count() << "us to calculate" << endl;
 		cout << "It took " << duration_gp.count() << "us to calculate G(P)" << endl << endl;
-		cout << "States - " << newG->nodes.size() << endl;
+		cout << "States - " << newG->nodes.size() << endl;*/
 		cout << " This Graph doesnt have the Always P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
 		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
-		//cin >> num;
-		num = 0;
+		cin >> num;
+		//num = 0;
 		if (num == 1)
 		{
 			tryContradictFalseTheGame(*newG, g, true, false, obstacles);

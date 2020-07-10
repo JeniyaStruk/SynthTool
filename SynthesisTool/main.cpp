@@ -399,25 +399,25 @@ void doGPandGFP()
 int main()
 {
 	int num=0, size;
-	//while (num != -1)
-	for (int i = 10; i <= 10; i++)
+	//for (int i = 10; i <= 10; i++)
+	while (num != -1)
 	{
 
 		cout << "What do you want to play?" << endl << "1. 2 White knights and a Black knight. ( G(p) )" << endl << "2. 2 White knights and a black knight responding! ( G(F(p)) )" << endl << "3. Read an input Graph and do G(p) and G (F (p)) on it " << endl << "Press -1 to exit the games " << endl;
-		//cin >> num;
-		num = 2;
+		cin >> num;
+		//num = 2;
 		switch (num)
 		{
 		case 1:
 			cout << "what size of board do you want? " << endl;
-			//cin >> size;
-			size = i;
+			cin >> size;
+			//size = i;
 			PlaySimpleGame(size);
 			break;
 		case 2:
 			cout << "what size of board do you want? " << endl;
-			//cin >> size;
-			size = i;
+			cin >> size;
+			//size = i;
 			PlayHarderGame(size);
 			break;
 		case 3:
