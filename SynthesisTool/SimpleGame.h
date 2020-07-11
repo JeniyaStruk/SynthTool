@@ -92,19 +92,6 @@ public:
 
 };
 
-class key3 {
-public:
-	int w1;
-	int w2;
-	int b1;
-
-	key3(int w1_, int w2_, int b1_) :w1(w1_), w2(w2_), b1(b1_) {}
-	bool comp(key3 second)
-	{
-		return ((w1 == second.w1) && (w2 == second.w2) && (b1 == second.b1));
-	}
-};
-
 void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 {
 	int index = 0;
@@ -126,12 +113,15 @@ void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 				cout << "___X__ |";
 			else
 			{
-				if (index == 0 || index == wPawn || index == bPawn)
+				if (index == 0 || index == wPawn || index == bPawn || index ==boardSize-1)
 				{
 					if (index == bPawn)
-						cout << "__B" << "P" << "__ |";
+						cout << "__BP__ |";
 					else
-						cout << "__W" << "P" << "__ |";
+						if(index == wPawn||index==0)
+							cout << "__WP__ |";
+						else
+							cout << "__XX__ |";
 				}
 				else
 				{
@@ -151,7 +141,7 @@ void printCleanBoardWithNumbers(int boardSize, vector<int> numsToErase)
 
 void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool randomize_run, bool obstacles)
 {
-	int num = 0, num_of_moves;
+	int num = 0, num_of_moves=1;
 	bool flag, EnvTurn = true;
 	OriginNode* currentNode;
 	currentNode = g.q0;
@@ -166,7 +156,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool random
 		condition1 = num != -1 && currentNode->p == true;
 	else
 		condition1 = num != -1 && currentNode->Good == true;
-	while (condition1)
+	while (condition1 && num_of_moves > 0)
 	{
 		if (!EnvTurn)
 		{
@@ -205,7 +195,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool random
 				current->printCurrent(obstacles);
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
-			if (num_of_moves)
+			if (randomize_run)
 			{
 				num_of_moves--;
 				num = rand() % currentNode->neigbours.size();
@@ -373,6 +363,15 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 typedef std::map<std::string, boardState*> TheMap;
 typedef std::pair<std::string, boardState*> ThePair;
 
+bool is_obstable(vector<int>& numsToErase, unsigned int num)
+{
+	for (size_t i = 0; i < numsToErase.size(); i++)
+		if (num == numsToErase[i])
+			return true;
+	return false;
+
+}
+
 void PlaySimpleGame(int size)
 {
 	int num = 0;
@@ -431,28 +430,15 @@ void PlaySimpleGame(int size)
 
 	for (i = 0; i < wholeSize; i++)
 	{
-		bool flag1 = false;
-		for (size_t ind = 0; ind < numsToErase.size(); ind++)
-		{
-			if (numsToErase[ind] == i)
-				flag1 = true;
-		}
-		if (i != j && i != k && flag1 == false)
+		if (i != j && i != k)
 			for (j = 0; j < wholeSize; j++)
-			{
-				bool flag2 = false;
-				for (size_t ind = 0; ind < numsToErase.size(); ind++)
-				{
-					if (numsToErase[ind] == j)
-						flag2 = true;
-				}
-				if (j != i && j != k && flag2 == false)
+				if (j != i && j != k )
 					for (k = 0; k < wholeSize; k++)
 					{
 						bool flag3 = false;
 						for (size_t ind = 0; ind < numsToErase.size(); ind++)
 						{
-							if (numsToErase[ind] == k)
+							if (numsToErase[ind] == k || numsToErase[ind] == i || numsToErase[ind] == j)
 								flag3 = true;
 						}
 						if (k != i && k != j && flag3 == false)
@@ -467,11 +453,11 @@ void PlaySimpleGame(int size)
 							all_states->push_back(new_state);
 							string str = to_string(i);
 							str += ","; str += to_string(j); str += ","; str += to_string(k);
+							//cout << str << endl;
 							myMap.insert(ThePair(str, new_state));
 							//new_state->printCurrent(obstacles);
 						}
 					}
-			}
 	}
 	//now lets connect nodes with Sys arches (white moves)
 	auto end_part_1 = steady_clock::now();
@@ -505,117 +491,117 @@ void PlaySimpleGame(int size)
 
 		boardState* neigState;
 		string str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
-		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1))
+		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1) && !is_obstable(numsToErase,white_1-1))
 		{
 			str = to_string(white_1 - 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1))
+		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1) && !is_obstable(numsToErase, white_1 + 1))
 		{
 			str = to_string(white_1 + 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 
 		}
-		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size))
+		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size) && !is_obstable(numsToErase, white_1 - size))
 		{
 			str = to_string(white_1 - size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size))
+		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size) && !is_obstable(numsToErase, white_1 + size))
 		{
 			str = to_string(white_1 + size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
 
-		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1))
+		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1) && !is_obstable(numsToErase, white_2 - 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 - 1); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1))
+		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1) && !is_obstable(numsToErase, white_2 + 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 + 1); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size))
+		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size) && !is_obstable(numsToErase, white_2 - size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 - size); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size))
+		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size) && !is_obstable(numsToErase, white_2 + size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 + size); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, false);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with sys Arch (white)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
 
 
-		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1))
+		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1) && !is_obstable(numsToErase, black_1 - 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - 1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, true);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with Env Arch (black)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1))
+		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1) && !is_obstable(numsToErase, black_1 + 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + 1);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, true);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with Env Arch (black)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size))
+		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size) && !is_obstable(numsToErase, black_1 - size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - size);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, true);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with Env Arch (black)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
-		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size))
+		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size) && !is_obstable(numsToErase, black_1 + size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + size);
 			neigState = myMap[str];
 			all_states->at(i_n)->addNeighbour(neigState, true);
-			//current->printCurrent();
+			//current->printCurrent(true);
 			//cout << "connected with Env Arch (black)" << endl;
-			//neigState->printCurrent();
+			//neigState->printCurrent(true);
 		}
 
 	}
