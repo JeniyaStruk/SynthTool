@@ -409,14 +409,24 @@ int main()
 		switch (num)
 		{
 		case 1:
-			cout << "what size of board do you want? " << endl;
+			cout << "what size of board do you want? has to be bigger than 1" << endl;
 			cin >> size;
+			if (size <= 1)
+			{
+				cout << "Has to be bigger then 1!";
+					break;
+			}
 			//size = i;
 			PlaySimpleGame(size);
 			break;
 		case 2:
-			cout << "what size of board do you want? " << endl;
+			cout << "what size of board do you want? has to be bigger than 1 " << endl;
 			cin >> size;
+			if (size <= 1)
+			{
+				cout << "Has to be bigger then 1!";
+				break;
+			}
 			//size = i;
 			PlayHarderGame(size);
 			break;

@@ -174,7 +174,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool random
 				if (currentNode->neigbours[i]->Good)
 					num = i;
 			}
-			cout << endl << "Sys chooses V" << currentNode->neigbours[num]->index << endl;
+			cout << endl << "Sys(Black) chooses V" << currentNode->neigbours[num]->index << endl;
 			current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
 			current->printCurrent(obstacles);
 			currentNode = currentNode->neigbours[num];
@@ -187,7 +187,7 @@ void tryContradictTrueTheGame(OriginGraph& g, Graph& graph, bool GP, bool random
 			cout << "Current node is V" << currentNode->index << endl;
 			current = (boardState*)graph.nodes[currentNode->index];
 			current->printCurrent(obstacles);
-			cout << "It has " << currentNode->neigbours.size() << " neighbours You(Enviroment) can Go to" << endl;
+			cout << "It has " << currentNode->neigbours.size() << " neighbours You(Enviroment - White) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
@@ -265,7 +265,7 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 			currentNode->printCurrent();
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
 			current->printCurrent(obstacles);
-			cout << "It has " << currentNode->neigbours.size() << " neighbours Environment can Go to" << endl;
+			cout << "It has " << currentNode->neigbours.size() << " neighbours Environment(White) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				//currentNode->printCurrent(obstacles);
@@ -298,7 +298,7 @@ void tryContradictFalseTheGame(OriginGraph& g, Graph& graph, bool GP, bool rando
 			cout << "Current node is V" << currentNode->index << endl;
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
 			current->printCurrent(obstacles);
-			cout << "It has " << currentNode->neigbours.size() << " neighbours You(System) can Go to" << endl;
+			cout << "It has " << currentNode->neigbours.size() << " neighbours You(System - Black) can Go to" << endl;
 
 			if (currentNode->neigbours.size() == 0)
 			{
@@ -429,7 +429,6 @@ void PlaySimpleGame(int size)
 	TheMap myMap;
 
 	for (i = 0; i < wholeSize; i++)
-	{
 		if (i != j && i != k)
 			for (j = 0; j < wholeSize; j++)
 				if (j != i && j != k )
@@ -458,7 +457,6 @@ void PlaySimpleGame(int size)
 							//new_state->printCurrent(obstacles);
 						}
 					}
-	}
 	//now lets connect nodes with Sys arches (white moves)
 	auto end_part_1 = steady_clock::now();
 	auto duration_p1 = duration_cast<microseconds>(end_part_1 - start);

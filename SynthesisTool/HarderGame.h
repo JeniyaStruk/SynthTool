@@ -12,7 +12,7 @@
 using namespace std::chrono;
 
 
-void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool randomize_run)
+void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool randomize_run, bool obstacles)
 {
 
 	int num = 0, num_of_moves = 1;
@@ -37,13 +37,13 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
-			cout << "It has " << currentNode->neigbours.size() << " neighbours System can Go to" << endl;
+			current->printCurrent(obstacles);
+			cout << "It has " << currentNode->neigbours.size() << " neighbours System(White) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 
 				if (currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
@@ -52,7 +52,7 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 				num_of_moves--;
 			cout << endl << "Sys chooses V" << currentNode->neigbours[num]->index << endl;
 			current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			currentNode = currentNode->neigbours[num];
 			EnvTurn = true;
 		}
@@ -62,13 +62,13 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
-			cout << "It has " << currentNode->neigbours.size() << " neighbours You(Enviroment) can Go to" << endl;
+			current->printCurrent(obstacles);
+			cout << "It has " << currentNode->neigbours.size() << " neighbours You(Enviroment - Black) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
 			if (randomize_run)
@@ -88,7 +88,7 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 					currentNode = currentNode->neigbours[i];
 					cout << endl << "Env chooses V" << currentNode->index << endl;
 					current = (boardState*)graph.nodes[currentNode->index];
-					current->printCurrent();
+					current->printCurrent(obstacles);
 					i = size;
 					EnvTurn = false;
 					if (randomize_run)
@@ -128,7 +128,15 @@ void tryContradictTheHarderGameTrue(OriginGraph& g, Graph& graph, bool GP, bool 
 	}
 }
 
-void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
+bool hasNumNeig(OriginNode* n)
+{
+	if (n->neigbours.size() > 0)
+		return true;
+	return false;
+
+}
+
+void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP, bool obstacles)
 {
 	int num = 0;
 	bool flag, EnvTurn = true;
@@ -138,7 +146,7 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 	if (GP)
 		condition1 = num != -1 && currentNode->p == true;
 	else
-		condition1 = num != -1 && currentNode->Good == true;
+		condition1 = num != -1 && hasNumNeig(currentNode);
 	while (condition1)
 	{
 		if (EnvTurn)
@@ -146,13 +154,14 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 			cout << "==============================================================================================" << endl;
 			currentNode->printCurrent();
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
-			cout << "It has " << currentNode->neigbours.size() << " neighbours Environment can Go to" << endl;
+			current->printCurrent(obstacles);
+			cout << "It has " << currentNode->neigbours.size() << " neighbours Environment(Black) can Go to" << endl;
+			num = 0;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				//currentNode->printCurrent();
 				//cout << "V" << currentNode->neigbours[i]->index << endl;
-				//current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
+				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
 				//current->printCurrent();
 				if (!currentNode->neigbours[i]->Good && currentNode->neigbours[i]->distance_from_notP < currentNode->distance_from_notP)
 					num = i;
@@ -168,7 +177,7 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 			{
 				cout << endl << "Env chooses V" << currentNode->neigbours[num]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[num]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 				currentNode = currentNode->neigbours[num];
 				EnvTurn = false;
 			}
@@ -179,13 +188,13 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 			cout << "==============================================================================================" << endl;
 			cout << "Current node is V" << currentNode->index << endl;
 			boardState* current = (boardState*)graph.nodes[currentNode->index];
-			current->printCurrent();
+			current->printCurrent(obstacles);
 			cout << "It has " << currentNode->neigbours.size() << " neighbours You(System) can Go to" << endl;
 			for (size_t i = 0; i < currentNode->neigbours.size(); i++)
 			{
 				cout << "V" << currentNode->neigbours[i]->index << endl;
 				current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-				current->printCurrent();
+				current->printCurrent(obstacles);
 			}
 			cout << endl << "Please press the index of the node you want to go to , if you give up , choose -1" << endl;
 			cin >> num;
@@ -197,7 +206,7 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 					flag = true;
 					cout << endl << "Sys chooses V" << currentNode->neigbours[i]->index << endl;
 					current = (boardState*)graph.nodes[currentNode->neigbours[i]->index];
-					current->printCurrent();
+					current->printCurrent(obstacles);
 					currentNode = currentNode->neigbours[i];
 					i = size;
 					EnvTurn = true;
@@ -212,12 +221,12 @@ void tryContradictTheHarderGameFalse(OriginGraph& g, Graph& graph, bool GP)
 		if (GP)
 			condition1 = num != -1 && currentNode->p == true;
 		else
-			condition1 = num != -1 && currentNode->Good == true;
+			condition1 = num != -1 && hasNumNeig(currentNode);
 	}
 	if (GP)
 		condition1 = (currentNode->p == false);
 	else
-		condition1 = (currentNode->Good == false);
+		condition1 = hasNumNeig(currentNode);;
 
 	if (condition1)
 		if (GP)
@@ -232,9 +241,54 @@ typedef std::pair<std::string, boardState*> ThePair;
 
 void PlayHarderGame(int size)
 {
+	vector<int> numsToErase;
+	bool obstacles = false;
+	int num = 0;
+	long int wholeSize = size * size;
+
+	cout << "Do you want to put obstacles ?  1 for yes , 0 or else for no" << endl;
+	cin >> num;
+	//num = 0;
+	if (num == 1)
+	{
+		obstacles = true;
+		while (num != -1)
+		{
+			cout << "=========================================================================" << endl;
+			printCleanBoardWithNumbers(size, numsToErase);
+			cout << "Where do you want to put Obstecles?" << endl;
+			cout << "Press the number of the Space, or press -1 to end" << endl;
+			cin >> num;
+			bool flag = 0;
+			for (size_t i = 0; i < numsToErase.size(); i++)
+			{
+				if (num == numsToErase[i])
+				{
+					cout << "Please choose another number, This one is taken" << endl;
+					flag = 1;
+				}
+			}
+			if (num == 0 || num == wholeSize - 1 || num == wholeSize - size)
+			{
+				cout << "You can't put your obstacles on the Pieces" << endl;
+				flag = 1;
+			}
+			if (num >= 0 && flag == 0 && num < wholeSize)
+			{
+				numsToErase.push_back(num);
+			}
+			else
+				if (num != -1)
+					cout << "Please follow the rules" << endl;
+		}
+	}
+	else
+	{
+		cout << "You chose No obstacles , We will start the Game." << endl;
+	}
+
 	cout << "-----------------------------------------------------------------" << endl;
 	cout << "We will start calculating the Game." << endl;
-	long int wholeSize = size * size;
 	vector<Node*>* all_states = new vector<Node*>();
 	auto start = high_resolution_clock::now();
 	int index = 0;
@@ -247,16 +301,26 @@ void PlayHarderGame(int size)
 					for (k = 0; k < wholeSize; k++)
 						if (k != i && k != j)
 						{
-							//cout << " i = " << i << " j = " << j << " k = " << k << endl;
-							boardState* new_state = new boardState(index, false, size);
-							index++;
-							new_state->white_player_1 = i;
-							new_state->white_player_2 = j;
-							new_state->black_player = k;
-							all_states->push_back(new_state);
-							string str = to_string(i);
-							str += ","; str += to_string(j); str += ","; str += to_string(k);
-							myMap.insert(ThePair(str, new_state));
+							bool flag3 = false;
+							for (size_t ind = 0; ind < numsToErase.size(); ind++)
+							{
+								if (numsToErase[ind] == k || numsToErase[ind] == i || numsToErase[ind] == j)
+									flag3 = true;
+							}
+							if (k != i && k != j && flag3 == false)
+							{
+								//cout << " i = " << i << " j = " << j << " k = " << k << endl;
+								boardState* new_state = new boardState(index, false, size);
+								index++;
+								new_state->white_player_1 = i;
+								new_state->white_player_2 = j;
+								new_state->black_player = k;
+								new_state->numsToErase = &numsToErase;
+								all_states->push_back(new_state);
+								string str = to_string(i);
+								str += ","; str += to_string(j); str += ","; str += to_string(k);
+								myMap.insert(ThePair(str, new_state));
+							}
 						}
 	//now lets connect nodes with Sys arches (white moves)
 
@@ -290,7 +354,7 @@ void PlayHarderGame(int size)
 
 		boardState* neigState;
 		string str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
-		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1))
+		if (white_1_x != 0 && (white_1 != white_2 + 1) && (white_1 != black_1 + 1) && !is_obstable(numsToErase, white_1 - 1))
 		{
 			str = to_string(white_1 - 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -299,7 +363,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with sys Arch (white)" << endl;
 			//neigState->printCurrent();
 		}
-		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1))
+		if ((white_1_x != size - 1) && (white_1 != white_2 - 1) && (white_1 != black_1 - 1) && !is_obstable(numsToErase, white_1 + 1))
 		{
 			str = to_string(white_1 + 1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -309,7 +373,7 @@ void PlayHarderGame(int size)
 			//neigState->printCurrent();
 
 		}
-		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size))
+		if (white_1_y != 0 && (white_1 != white_2 + size) && (white_1 != black_1 + size) && !is_obstable(numsToErase, white_1 - size))
 		{
 			str = to_string(white_1 - size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -318,7 +382,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with sys Arch (white)" << endl;
 			//neigState->printCurrent();
 		}
-		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size))
+		if (white_1_y != size - 1 && (white_1 != white_2 - size) && (white_1 != black_1 - size) && !is_obstable(numsToErase, white_1 + size))
 		{
 			str = to_string(white_1 + size); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -328,7 +392,7 @@ void PlayHarderGame(int size)
 			//neigState->printCurrent();
 		}
 
-		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1))
+		if (white_2_x != 0 && (white_2 != white_1 + 1) && (white_2 != black_1 + 1) && !is_obstable(numsToErase, white_2 - 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 - 1); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -337,7 +401,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with sys Arch (white)" << endl;
 			//neigState->printCurrent();
 		}
-		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1))
+		if (white_2_x != size - 1 && (white_2 != white_1 - 1) && (white_2 != black_1 - 1) && !is_obstable(numsToErase, white_2 + 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 + 1); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -346,7 +410,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with sys Arch (white)" << endl;
 			//neigState->printCurrent();
 		}
-		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size))
+		if (white_2_y != 0 && (white_2 != white_1 + size) && (white_2 != black_1 + size) && !is_obstable(numsToErase, white_2 - size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 - size); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -355,7 +419,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with sys Arch (white)" << endl;
 			//neigState->printCurrent();
 		}
-		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size))
+		if (white_2_y != size - 1 && (white_2 != white_1 - size) && (white_2 != black_1 - size) && !is_obstable(numsToErase, white_2 + size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2 + size); str += ","; str += to_string(black_1);
 			neigState = myMap[str];
@@ -366,7 +430,7 @@ void PlayHarderGame(int size)
 		}
 
 
-		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1))
+		if (black_1_x != 0 && (black_1 != white_1 + 1) && (black_1 != white_2 + 1) && !is_obstable(numsToErase, black_1 - 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - 1);
 			neigState = myMap[str];
@@ -375,7 +439,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with Env Arch (black)" << endl;
 			//neigState->printCurrent();
 		}
-		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1))
+		if (black_1_x != size - 1 && (black_1 != white_1 - 1) && (black_1 != white_2 - 1) && !is_obstable(numsToErase, black_1 + 1))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + 1);
 			neigState = myMap[str];
@@ -384,7 +448,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with Env Arch (black)" << endl;
 			//neigState->printCurrent();
 		}
-		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size))
+		if (black_1_y != 0 && (black_1 != white_1 + size) && (black_1 != white_2 + size) && !is_obstable(numsToErase, black_1 - size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 - size);
 			neigState = myMap[str];
@@ -393,7 +457,7 @@ void PlayHarderGame(int size)
 			//cout << "connected with Env Arch (black)" << endl;
 			//neigState->printCurrent();
 		}
-		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size))
+		if (black_1_y != size - 1 && (black_1 != white_1 - size) && (black_1 != white_2 - size) && !is_obstable(numsToErase, black_1 + size))
 		{
 			str = to_string(white_1); str += ","; str += to_string(white_2); str += ","; str += to_string(black_1 + size);
 			neigState = myMap[str];
@@ -434,6 +498,7 @@ void PlayHarderGame(int size)
 			winning_state->white_player_1 = current->black_player;
 			winning_state->white_player_2 = current->white_player_2;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
@@ -457,6 +522,7 @@ void PlayHarderGame(int size)
 			winning_state->white_player_1 = current->white_player_1;
 			winning_state->white_player_2 = current->black_player;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
@@ -480,6 +546,7 @@ void PlayHarderGame(int size)
 			winning_state->white_player_1 = current->black_player;
 			winning_state->white_player_2 = current->white_player_2;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
@@ -503,6 +570,7 @@ void PlayHarderGame(int size)
 			winning_state->white_player_1 = current->white_player_1;
 			winning_state->white_player_2 = current->black_player;
 			winning_state->black_player = current->black_player;
+			winning_state->numsToErase = &numsToErase;
 			all_states->push_back(winning_state);
 			current->addNeighbour(winning_state, true);
 			//winning_state->printCurrent();
@@ -520,9 +588,8 @@ void PlayHarderGame(int size)
 			}
 		}
 	}
-	int num;
 	boardState* current = (boardState*)q0;
-	current->printCurrent();
+	current->printCurrent(obstacles);
 	Graph g(*all_states, q0);
 	OriginGraph* newG = makeASeperatedGraph(g);
 	auto end_part_4 = steady_clock::now();
@@ -541,14 +608,14 @@ void PlayHarderGame(int size)
 		//num = 0;
 		if (num == 1)
 		{
-			tryContradictTheHarderGameTrue(*newG, g, false, false);
+			tryContradictTheHarderGameTrue(*newG, g, false, false, obstacles);
 		}
 		else
 			if (num == 0)
 				cout << "okay , Thank you and GoodBye" << endl;
 			else
 				if (num == 2)
-					tryContradictTheHarderGameTrue(*newG, g, false, true);
+					tryContradictTheHarderGameTrue(*newG, g, false, true, obstacles);
 				else
 					cout << "You pressed the wrong option, Good Bye" << endl;
 	}
@@ -556,11 +623,10 @@ void PlayHarderGame(int size)
 	{
 		cout << " This Graph doesnt have the Always Eventually P Propery " << endl;
 		cout << " do you want to try and contradict it? press 1 for Yes , 0 for no" << endl;
-		cout << "Or .. do you want to see a randomized run , if so .. press 2 ?" << endl;
 		cin >> num;
 		if (num == 1)
 		{
-			tryContradictTheHarderGameFalse(*newG, g, false);
+			tryContradictTheHarderGameFalse(*newG, g, false, obstacles);
 		}
 		else
 			if (num == 0)

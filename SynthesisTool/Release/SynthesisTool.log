@@ -2,6 +2,6 @@
 F:\SynthesisTool\SynthesisTool\main.cpp(241,19): warning C4244: '=': conversion from 'std::streamoff' to 'int', possible loss of data
   Generating code
   Previous IPDB not found, fall back to full compilation.
-  All 510 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  All 511 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
   Finished generating code
   SynthesisTool.vcxproj -> F:\SynthesisTool\Release\SynthesisTool.exe
